@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  FIELD_FORCE
+  MANAGER
+  ADMIN
+}
+
+model User {
+  id                    String        @id @default(cuid())
+  staffId               String        @unique
+  name                  String
+  passwordHash          String
+  role                  Role          @default(FIELD_FORCE)
+  territory             String?
+  area                  String?
+  areaCode              String?
+  supervisedTerritories String?       // Stored as a comma-separated string or JSON
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  requisitions          Requisition[]
+}
+
+model Vehicle {
+  id                 String        @id @default(cuid())
+  code               String        @unique
+  customerName       String?
+  registrationNo     String?
+  engineNo           String?
+  chassisNoPrimary   String?
+  chassisNoSecondary String?
+  contactNo          String?
+  status             String        @default("Not Processed")
+  courierDate        DateTime?
+  receiver           String?
+  remark             String?       @db.Text
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  requisitions       Requisition[]
+}
+
+model Requisition {
+  id              String    @id @default(cuid())
+  requisitionId   String    @unique
+  vehicleId       String
+  officerId       String
+  status          String    @default("Pending")
+  managerRemark   String?   @db.Text
+  adminRemark     String?   @db.Text
+  managerUsername String?
+  adminUsername   String?
+  submissionDate  DateTime  @default(now())
+  lastUpdated     DateTime  @default(now()) @updatedAt
+
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  officer User    @relation(fields: [officerId], references: [id], onDelete: Restrict)
+
+  @@index([vehicleId])
+  @@index([officerId])
+}
