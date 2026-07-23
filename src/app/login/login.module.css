@@ -11,20 +11,22 @@
   max-width: 420px;
   padding: 2.5rem 2rem;
   text-align: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 20px 40px -15px rgba(15, 41, 66, 0.08);
 }
 
 .title {
   font-size: 1.75rem;
-  margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.25rem;
+  color: #0F2942;
 }
 
 .subtitle {
   color: var(--text-secondary);
   font-size: 0.875rem;
   margin-bottom: 2rem;
+  font-weight: 500;
 }
 
 .submitBtn {
@@ -33,9 +35,9 @@
 }
 
 .errorAlert {
-  background-color: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  background-color: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #dc2626;
   padding: 0.75rem;
   border-radius: var(--radius-md);
   margin-bottom: 1.5rem;
