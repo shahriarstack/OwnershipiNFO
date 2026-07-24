@@ -536,6 +536,86 @@
     @keyframes expandContent { 0% { opacity: 0; max-height: 0; transform: scaleY(0.95); transform-origin: top; } 100% { opacity: 1; max-height: 500px; transform: scaleY(1); } }
     @keyframes popInSoft { 0% { opacity: 0; transform: scale(0.9) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 
+    /* Animated Staggered Timeline Stages */
+    .ff-timeline-track {
+      position: relative;
+      padding-left: 1.75rem;
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+    .ff-timeline-track::before {
+      content: '';
+      position: absolute;
+      left: 0.65rem;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      width: 2px;
+      background: linear-gradient(180deg, var(--primary-blue) 0%, rgba(226, 232, 240, 0.8) 100%);
+      border-radius: 2px;
+    }
+
+    .ff-timeline-step {
+      position: relative;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: flex-start;
+    }
+    .ff-timeline-step:last-child { margin-bottom: 0; }
+
+    .ff-req-card.open .ff-timeline-step {
+      opacity: 0;
+      animation: stagePopIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    .ff-req-card.open .ff-timeline-step:nth-child(1) { animation-delay: 0.08s; }
+    .ff-req-card.open .ff-timeline-step:nth-child(2) { animation-delay: 0.16s; }
+    .ff-req-card.open .ff-timeline-step:nth-child(3) { animation-delay: 0.24s; }
+    .ff-req-card.open .ff-timeline-step:nth-child(4) { animation-delay: 0.32s; }
+
+    @keyframes stagePopIn {
+      0% { opacity: 0; transform: translateX(-15px) scale(0.92); }
+      100% { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    .ff-step-dot {
+      position: absolute;
+      left: -1.75rem;
+      top: 0.05rem;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      z-index: 2;
+      transition: all 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .ff-step-dot.completed {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+    .ff-step-dot.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.5);
+      animation: pulseGlow 1.8s infinite;
+    }
+    .ff-step-dot.pending {
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      color: #94a3b8;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(2, 132, 199, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+    }
+
   </style>
 </head>
 <body id="bodyTag">
@@ -1131,6 +1211,23 @@
         if (filtered.length > 0) {
           container.innerHTML = filtered.map((r, i) => {
             const isCompleted = (r.status === 'Completed' || r.status === 'Delivered');
+
+            const s1State = 'completed';
+            const s1Icon = '✓';
+
+            const s2State = (r.status === 'Approved' || r.status === 'HO Processing' || isCompleted) 
+              ? 'completed' 
+              : (r.status === 'Pending' ? 'active' : 'pending');
+            const s2Icon = s2State === 'completed' ? '✓' : (s2State === 'active' ? '⏳' : '2');
+
+            const s3State = (r.status === 'HO Processing' || isCompleted) 
+              ? 'completed' 
+              : (r.status === 'Approved' ? 'active' : 'pending');
+            const s3Icon = s3State === 'completed' ? '✓' : (s3State === 'active' ? '⚡' : '3');
+
+            const s4State = isCompleted ? 'completed' : (r.status === 'HO Processing' ? 'active' : 'pending');
+            const s4Icon = s4State === 'completed' ? '✓' : (s4State === 'active' ? '📦' : '4');
+
             return `
               <div class="ff-req-card fade-up" id="card-${r.requisitionId}" onclick="toggleCardDetails('card-${r.requisitionId}')" style="animation-delay: ${Math.min(i * 0.04, 0.4)}s; padding: 0.6rem 0.75rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.3rem;">
@@ -1140,35 +1237,40 @@
                 <p style="font-size: 0.72rem; color: var(--text-secondary);">ID: ${r.requisitionId} &nbsp;&bull;&nbsp; ${r.submissionDate}</p>
                 
                 <div class="ff-req-details" onclick="event.stopPropagation()">
-                  <div class="timeline-container" style="padding: 0; margin-top: 0.5rem; box-shadow: none; border: none; background: transparent;">
-                    <div class="timeline-step ${r.status !== 'Not Processed' ? 'completed' : 'pending'}">
-                      <div class="step-indicator">1</div>
+                  <div class="ff-timeline-track">
+                    
+                    <div class="ff-timeline-step">
+                      <div class="ff-step-dot ${s1State}">${s1Icon}</div>
                       <div class="step-content">
-                        <div class="step-title">Initialized</div>
-                        <div class="step-location">${r.submissionDate}</div>
+                        <div class="step-title" style="font-size: 0.8rem; font-weight:700; color:var(--primary-navy);">1. Request Initialized</div>
+                        <div class="step-location" style="font-size: 0.7rem; color:var(--text-secondary);">${r.submissionDate}</div>
                       </div>
                     </div>
-                    <div class="timeline-step ${r.status === 'Approved' || r.status === 'HO Processing' || isCompleted ? 'completed' : (r.status === 'Pending' ? 'active' : 'pending')}">
-                      <div class="step-indicator">2</div>
+
+                    <div class="ff-timeline-step">
+                      <div class="ff-step-dot ${s2State}">${s2Icon}</div>
                       <div class="step-content">
-                        <div class="step-title">Manager Approval</div>
-                        <div class="step-location">${r.managerRemark ? 'Remark: ' + r.managerRemark : 'Pending review'}</div>
+                        <div class="step-title" style="font-size: 0.8rem; font-weight:700; color:${s2State === 'pending' ? '#94a3b8' : 'var(--primary-navy)'};">2. Territory Manager Approval</div>
+                        <div class="step-location" style="font-size: 0.7rem; color:${s2State === 'pending' ? '#cbd5e1' : 'var(--text-secondary)'};">${r.managerRemark ? 'Remark: ' + r.managerRemark : (s2State === 'active' ? 'Under Territory Review' : (s2State === 'completed' ? 'Approved' : 'Awaiting Review'))}</div>
                       </div>
                     </div>
-                    <div class="timeline-step ${r.status === 'HO Processing' || isCompleted ? 'completed' : 'pending'}">
-                      <div class="step-indicator">3</div>
+
+                    <div class="ff-timeline-step">
+                      <div class="ff-step-dot ${s3State}">${s3Icon}</div>
                       <div class="step-content">
-                        <div class="step-title">HO Processing</div>
-                        <div class="step-location">Head Office</div>
+                        <div class="step-title" style="font-size: 0.8rem; font-weight:700; color:${s3State === 'pending' ? '#94a3b8' : 'var(--primary-navy)'};">3. Head Office Processing</div>
+                        <div class="step-location" style="font-size: 0.7rem; color:${s3State === 'pending' ? '#cbd5e1' : 'var(--text-secondary)'};">${s3State === 'active' ? 'Processing Ownership Papers' : (s3State === 'completed' ? 'Verified by HO' : 'Pending HO Action')}</div>
                       </div>
                     </div>
-                    <div class="timeline-step ${isCompleted ? 'completed' : 'pending'}">
-                      <div class="step-indicator">4</div>
+
+                    <div class="ff-timeline-step">
+                      <div class="ff-step-dot ${s4State}">${s4Icon}</div>
                       <div class="step-content">
-                        <div class="step-title">Completed</div>
-                        <div class="step-location">Documents Ready</div>
+                        <div class="step-title" style="font-size: 0.8rem; font-weight:700; color:${s4State === 'pending' ? '#94a3b8' : 'var(--primary-navy)'};">4. Paper Ready / Handover</div>
+                        <div class="step-location" style="font-size: 0.7rem; color:${s4State === 'pending' ? '#cbd5e1' : 'var(--text-secondary)'};">${isCompleted ? 'Documents Handed Over' : 'Pending Completion'}</div>
                       </div>
                     </div>
+
                   </div>
                 </div>
               </div>
