@@ -209,7 +209,7 @@
     .mobile-header {
       background: var(--primary-navy);
       color: white;
-      padding: 0.75rem 1rem;
+      padding: 0.85rem 1.25rem;
       border-bottom-left-radius: 1.25rem;
       border-bottom-right-radius: 1.25rem;
       display: flex;
@@ -220,8 +220,18 @@
       z-index: 100;
       box-shadow: 0 10px 20px rgba(15, 41, 66, 0.15);
       backdrop-filter: blur(10px);
+      box-sizing: border-box;
+      width: 100%;
     }
-    .mobile-header img { height: 24px; }
+    .mobile-header img { height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+
+    @media (min-width: 600px) {
+      .mobile-header {
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 480px;
+      }
+    }
 
     /* Bottom Navigation Bar (iOS/Android Native Feel) */
     .bottom-nav {
