@@ -608,6 +608,7 @@
                   <th>Registration</th>
                   <th>Officer</th>
                   <th>Submitted Date</th>
+                  <th>Manager Remarks</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -980,6 +981,7 @@
                     <div class="step-title">Manager Verification</div>
                     <div class="step-location">📍 Zonal Office</div>
                     ${s2 === 'active' ? `<div class="step-time" style="color:var(--primary-blue);">Awaiting Approval...</div>` : ''}
+                    ${v.managerRemark ? `<div style="font-size:0.75rem; color:#0369a1; background:#e0f2fe; padding:0.25rem 0.5rem; border-radius:0.4rem; margin-top:0.3rem; font-weight:600;">💬 Remark: ${v.managerRemark}</div>` : ''}
                   </div>
                 </div>
                 
@@ -1188,6 +1190,7 @@
             <td>${r.registrationNo || '-'}</td>
             <td>${r.officerStaffId}</td>
             <td>${r.submissionDate}</td>
+            <td style="font-size:0.85rem; color:#475569; max-width:200px;">${r.managerRemark || '<span style="color:#cbd5e1;">None</span>'}</td>
             <td>${actionBtns}</td>
           </tr>
         `}).join('');
@@ -1195,11 +1198,25 @@
     }
 
     async function updateReqStatus(reqId, newStatus) {
-      if (!confirm(`Update requisition ${reqId} to ${newStatus}?`)) return;
+      let remark = '';
+      if (currentUser && (currentUser.role === 'MANAGER' || newStatus === 'Approved' || newStatus === 'Rejected')) {
+        const defaultRemark = newStatus === 'Approved' ? 'Verified and Approved' : 'Rejected - Documents incomplete';
+        const userInput = prompt(`Manager Approval/Rejection Remark for ${reqId}:`, defaultRemark);
+        if (userInput === null) return; // User cancelled prompt
+        remark = userInput;
+      } else {
+        if (!confirm(`Update requisition ${reqId} to ${newStatus}?`)) return;
+      }
+
       const res = await fetch(`${API_URL}?action=update_req_status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requisitionId: reqId, newStatus })
+        body: JSON.stringify({ 
+          requisitionId: reqId, 
+          newStatus, 
+          remark,
+          managerUsername: currentUser ? (currentUser.name || currentUser.staffId) : ''
+        })
       });
       const data = await res.json();
       if (data.status === 'success') {

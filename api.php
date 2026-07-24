@@ -267,11 +267,11 @@ if ($action === 'export_csv') {
 if ($action === 'vehicles') {
     $search = trim($_GET['search'] ?? '');
     if ($search) {
-        $stmt = $pdo->prepare("SELECT * FROM vehicles WHERE code LIKE ? OR registrationNo LIKE ? OR chassisNoPrimary LIKE ? OR customerName LIKE ?");
+        $stmt = $pdo->prepare("SELECT v.*, r.managerRemark, r.submissionDate as reqDate FROM vehicles v LEFT JOIN requisitions r ON v.code = r.vehicleCode WHERE v.code LIKE ? OR v.registrationNo LIKE ? OR v.chassisNoPrimary LIKE ? OR v.customerName LIKE ? ORDER BY v.id DESC");
         $term = "%$search%";
         $stmt->execute([$term, $term, $term, $term]);
     } else {
-        $stmt = $pdo->query("SELECT * FROM vehicles ORDER BY id DESC LIMIT 100");
+        $stmt = $pdo->query("SELECT v.*, r.managerRemark, r.submissionDate as reqDate FROM vehicles v LEFT JOIN requisitions r ON v.code = r.vehicleCode ORDER BY v.id DESC LIMIT 100");
     }
     echo json_encode(["status" => "success", "vehicles" => $stmt->fetchAll()]);
     exit();
@@ -302,14 +302,16 @@ if ($action === 'update_req_status') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $reqId = trim($input['requisitionId'] ?? '');
     $newStatus = trim($input['newStatus'] ?? '');
+    $remark = trim($input['remark'] ?? $input['managerRemark'] ?? '');
+    $managerUsername = trim($input['managerUsername'] ?? '');
     
     if (!$reqId || !$newStatus) {
         echo json_encode(["status" => "error", "message" => "Missing parameters"]);
         exit();
     }
     
-    $stmt = $pdo->prepare("UPDATE requisitions SET status = ? WHERE requisitionId = ?");
-    $stmt->execute([$newStatus, $reqId]);
+    $stmt = $pdo->prepare("UPDATE requisitions SET status = ?, managerRemark = ?, managerUsername = ? WHERE requisitionId = ?");
+    $stmt->execute([$newStatus, $remark, $managerUsername, $reqId]);
     
     if ($newStatus === 'Rejected') {
         $vStatus = 'Not Processed';
