@@ -56,8 +56,14 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS vehicles (
     courierDate DATETIME,
     receiver VARCHAR(100),
     remark TEXT,
+    territory VARCHAR(100),
+    part VARCHAR(50),
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 )");
+
+try { $pdo->exec("ALTER TABLE vehicles ADD COLUMN territory VARCHAR(100) AFTER remark"); } catch (\PDOException $e) {}
+try { $pdo->exec("ALTER TABLE vehicles ADD COLUMN part VARCHAR(50) AFTER territory"); } catch (\PDOException $e) {}
+
 
 $pdo->exec("CREATE TABLE IF NOT EXISTS requisitions (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -221,12 +227,12 @@ if ($action === 'upload_csv') {
         exit();
     }
 
-    $stmt = $pdo->prepare("INSERT INTO vehicles (code, customerName, registrationNo, engineNo, chassisNoPrimary, status, remark) 
-                           VALUES (?, ?, ?, ?, ?, ?, ?) 
+    $stmt = $pdo->prepare("INSERT INTO vehicles (code, customerName, registrationNo, engineNo, chassisNoPrimary, status, remark, territory, part) 
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) 
                            ON DUPLICATE KEY UPDATE 
                            customerName=VALUES(customerName), registrationNo=VALUES(registrationNo), 
                            engineNo=VALUES(engineNo), chassisNoPrimary=VALUES(chassisNoPrimary), 
-                           status=VALUES(status), remark=VALUES(remark)");
+                           status=VALUES(status), remark=VALUES(remark), territory=VALUES(territory), part=VALUES(part)");
     $imported = 0;
     foreach ($rows as $row) {
         $code = trim($row['code'] ?? $row['Code'] ?? $row['CustomerCode'] ?? '');
@@ -239,7 +245,9 @@ if ($action === 'upload_csv') {
             $row['engineNo'] ?? $row['EngineNo'] ?? '',
             $row['chassisNoPrimary'] ?? $row['ChassisNo'] ?? $row['ChassisNoPrimary'] ?? '',
             $row['status'] ?? $row['Status'] ?? 'Not Processed',
-            $row['remark'] ?? $row['Remark'] ?? ''
+            $row['remark'] ?? $row['Remark'] ?? '',
+            $row['territory'] ?? $row['Territory'] ?? '',
+            $row['part'] ?? $row['Part'] ?? ''
         ]);
         $imported++;
     }
@@ -256,7 +264,7 @@ if ($action === 'export_csv') {
         $stmt = $pdo->query("SELECT r.requisitionId, r.vehicleCode, v.customerName, v.registrationNo, r.officerStaffId, r.status, r.submissionDate FROM requisitions r LEFT JOIN vehicles v ON r.vehicleCode = v.code ORDER BY r.id DESC");
         $data = $stmt->fetchAll();
     } else {
-        $stmt = $pdo->query("SELECT code, customerName, registrationNo, engineNo, chassisNoPrimary, status, remark, createdAt FROM vehicles ORDER BY id DESC");
+        $stmt = $pdo->query("SELECT code, customerName, registrationNo, engineNo, chassisNoPrimary, status, remark, territory, part, createdAt FROM vehicles ORDER BY id DESC");
         $data = $stmt->fetchAll();
     }
 
@@ -266,20 +274,98 @@ if ($action === 'export_csv') {
 
 if ($action === 'vehicles') {
     $search = trim($_GET['search'] ?? '');
+    $officerTerritory = trim($_GET['officerTerritory'] ?? '');
+    $part = trim($_GET['part'] ?? '');
+    $territory = trim($_GET['territory'] ?? '');
+    
+    $where = [];
+    $params = [];
+    
     if ($search) {
-        $stmt = $pdo->prepare("SELECT v.*, r.managerRemark, r.submissionDate as reqDate FROM vehicles v LEFT JOIN requisitions r ON v.code = r.vehicleCode WHERE v.code LIKE ? OR v.registrationNo LIKE ? OR v.chassisNoPrimary LIKE ? OR v.customerName LIKE ? ORDER BY v.id DESC");
+        $where[] = "(v.code LIKE ? OR v.registrationNo LIKE ? OR v.chassisNoPrimary LIKE ? OR v.customerName LIKE ?)";
         $term = "%$search%";
-        $stmt->execute([$term, $term, $term, $term]);
-    } else {
-        $stmt = $pdo->query("SELECT v.*, r.managerRemark, r.submissionDate as reqDate FROM vehicles v LEFT JOIN requisitions r ON v.code = r.vehicleCode ORDER BY v.id DESC LIMIT 100");
+        array_push($params, $term, $term, $term, $term);
     }
+    
+    if ($officerTerritory) {
+        $where[] = "v.territory = ?";
+        $params[] = $officerTerritory;
+    } elseif ($territory) {
+        $where[] = "v.territory LIKE ?";
+        $params[] = "%$territory%";
+    }
+    
+    if ($part && $part !== 'All') {
+        $where[] = "v.part = ?";
+        $params[] = $part;
+    }
+    
+    $whereClause = empty($where) ? "" : "WHERE " . implode(" AND ", $where);
+    
+    $query = "SELECT v.*, r.managerRemark, r.submissionDate as reqDate FROM vehicles v LEFT JOIN requisitions r ON v.code = r.vehicleCode $whereClause ORDER BY v.id DESC" . (empty($where) ? " LIMIT 100" : "");
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
+    
     echo json_encode(["status" => "success", "vehicles" => $stmt->fetchAll()]);
     exit();
 }
 
 if ($action === 'vehicles_raw') {
-    $stmt = $pdo->query("SELECT * FROM vehicles ORDER BY id DESC");
+    $part = trim($_GET['part'] ?? '');
+    $territory = trim($_GET['territory'] ?? '');
+    
+    $where = [];
+    $params = [];
+    
+    if ($territory) {
+        $where[] = "territory LIKE ?";
+        $params[] = "%$territory%";
+    }
+    if ($part && $part !== 'All') {
+        $where[] = "part = ?";
+        $params[] = $part;
+    }
+    
+    $whereClause = empty($where) ? "" : "WHERE " . implode(" AND ", $where);
+    $stmt = $pdo->prepare("SELECT * FROM vehicles $whereClause ORDER BY id DESC");
+    $stmt->execute($params);
     echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    exit();
+}
+
+if ($action === 'analytics') {
+    $stmt = $pdo->query("
+        SELECT 
+            part,
+            COUNT(code) as total_vehicles,
+            SUM(CASE WHEN status != 'Not Processed' THEN 1 ELSE 0 END) as total_requisitions,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'Rejected' THEN 1 ELSE 0 END) as rejected
+        FROM vehicles
+        GROUP BY part
+    ");
+    
+    $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode(["status" => "success", "analytics" => $data]);
+    exit();
+}
+
+if ($action === 'territory_summary') {
+    $stmt = $pdo->query("
+        SELECT 
+            COALESCE(NULLIF(territory, ''), 'Unassigned') as territory,
+            COALESCE(NULLIF(part, ''), 'General') as part,
+            COUNT(code) as total_vehicles,
+            SUM(CASE WHEN status != 'Not Processed' THEN 1 ELSE 0 END) as total_requisitions,
+            SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'Approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'Completed' OR status = 'Delivered' THEN 1 ELSE 0 END) as completed
+        FROM vehicles
+        GROUP BY territory, part
+        ORDER BY total_vehicles DESC
+    ");
+    echo json_encode(["status" => "success", "summary" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
     exit();
 }
 
@@ -333,8 +419,30 @@ if ($action === 'update_req_status') {
 }
 
 if ($action === 'requisitions') {
-    $stmt = $pdo->query("SELECT r.*, v.customerName, v.registrationNo FROM requisitions r LEFT JOIN vehicles v ON r.vehicleCode = v.code ORDER BY r.id DESC");
+    $part = trim($_GET['part'] ?? '');
+    $territory = trim($_GET['territory'] ?? '');
+    
+    $where = [];
+    $params = [];
+    
+    if ($territory) {
+        $where[] = "v.territory LIKE ?";
+        $params[] = "%$territory%";
+    }
+    
+    if ($part && $part !== 'All') {
+        $where[] = "v.part = ?";
+        $params[] = $part;
+    }
+    
+    $whereClause = empty($where) ? "" : "WHERE " . implode(" AND ", $where);
+    
+    $query = "SELECT r.*, v.customerName, v.registrationNo, v.territory, v.part FROM requisitions r LEFT JOIN vehicles v ON r.vehicleCode = v.code $whereClause ORDER BY r.id DESC";
+    
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
     $reqs = $stmt->fetchAll();
+    
     foreach ($reqs as &$r) {
         $r['deadline'] = calculateWorkingDaysDeadline($r['submissionDate']);
     }
