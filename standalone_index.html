@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FOTON-ACI Motors — Ownership Enterprise System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =========================================================================
+       1. GLOBAL VARIABLES & RESET
+       ========================================================================= */
+    :root {
+      --bg-primary: #f1f5f9;
+      --bg-secondary: #ffffff;
+      --bg-card: rgba(255, 255, 255, 0.85); /* Glassmorphism base */
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --text-heading: #0F2942;
+      
+      --primary-navy: #0F2942;
+      --primary-blue: #0284c7;
+      --primary-hover: #0369a1;
+      
+      --status-amber: #f59e0b;
+      --status-blue: #3b82f6;
+      --status-emerald: #10b981;
+      --danger-color: #ef4444;
+
+      --border-color: rgba(226, 232, 240, 0.8);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+      
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.08), 0 8px 10px -6px rgba(15, 41, 66, 0.04);
+      --shadow-hover: 0 20px 45px -10px rgba(15, 41, 66, 0.18);
+      --shadow-timeline: 0 8px 24px -4px rgba(2, 132, 199, 0.15);
+
+      --radius-sm: 0.75rem;
+      --radius-md: 1rem;
+      --radius-lg: 1.5rem;
+      --radius-xl: 2rem;
+      
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-heading: 'Outfit', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background-color: var(--bg-primary);
+      background-image: 
+        radial-gradient(circle at 10% 0%, rgba(2, 132, 199, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 90% 100%, rgba(15, 41, 66, 0.04) 0%, transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4 { font-family: var(--font-heading); color: var(--text-heading); font-weight: 600; letter-spacing: -0.02em; }
+    button { font-family: var(--font-heading); }
+
+    .hidden { display: none !important; }
+
+    /* =========================================================================
+       2. GLASSMORPHISM & UTILITIES
+       ========================================================================= */
+    .glass-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .alert { padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.25rem; font-size: 0.9rem; font-weight: 500; text-align: center; }
+    .alert-error { background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; }
+    .alert-success { background: #dcfce7; border: 1px solid #bbf7d0; color: #15803d; }
+
+    /* Inputs & Buttons */
+    .input-group { margin-bottom: 1.15rem; position: relative; }
+    .input-label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-heading); margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .input-field {
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .input-field:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1); background-color: #fff; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      gap: 0.5rem;
+    }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%); 
+      color: #fff; 
+      box-shadow: 0 6px 15px 0 rgba(2, 132, 199, 0.25); 
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 20px 0 rgba(2, 132, 199, 0.3); }
+    .btn-success { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; }
+    .btn-danger { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; }
+    .btn-outline { background: transparent; border: 2px solid var(--primary-navy); color: var(--primary-navy); }
+
+    /* =========================================================================
+       3. LOGIN VIEW
+       ========================================================================= */
+    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+    .login-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 25px 60px -12px rgba(15, 41, 66, 0.2);
+      padding: 2.5rem 2rem;
+      animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes slideUpFade {
+      0% { opacity: 0; transform: translateY(30px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-card-top {
+      background: linear-gradient(135deg, var(--primary-navy) 0%, #1e3a8a 100%);
+      margin: -2.5rem -2rem 2rem -2rem;
+      padding: 2.5rem 1.5rem 2rem 1.5rem;
+      text-align: center;
+      color: #ffffff;
+      border-top-left-radius: var(--radius-xl);
+      border-top-right-radius: var(--radius-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    .login-card-top::after {
+      content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 5px;
+      background: linear-gradient(90deg, #0284c7, #38bdf8, #0284c7);
+      background-size: 200% auto; animation: gradientShift 3s linear infinite;
+    }
+    @keyframes gradientShift { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+
+    .role-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; background: rgba(241, 245, 249, 0.7); padding: 0.5rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
+    .role-btn { background: transparent; border: none; padding: 0.75rem 0.25rem; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); border-radius: 0.5rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+    .role-btn.active { background: #ffffff; color: var(--primary-navy); box-shadow: 0 4px 15px rgba(15, 41, 66, 0.1); transform: scale(1.02); }
+
+    .quick-preset-btn { background: #e0f2fe; color: #0369a1; border: 1px dashed #7dd3fc; border-radius: var(--radius-md); padding: 0.6rem 0.75rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; width: 100%; margin-bottom: 1.5rem; transition: background 0.2s; }
+    .quick-preset-btn:hover { background: #bae6fd; }
+
+    .eye-btn { position: absolute; right: 1rem; top: 2.1rem; background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--text-secondary); }
+
+    /* =========================================================================
+       4. LAYOUT ARCHITECTURE (ROLE-BASED)
+       ========================================================================= */
+    /* 4A. FIELD FORCE (MOBILE-FIRST APP LAYOUT) */
+    body.role-field-force #appView {
+      max-width: 480px; /* Mobile app dimensions */
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg-primary);
+      box-shadow: 0 0 50px rgba(0,0,0,0.1);
+      position: relative;
+      padding-bottom: 80px; /* Space for bottom nav */
+    }
+    
+    .mobile-header {
+      background: var(--primary-navy);
+      color: white;
+      padding: 1.25rem 1.5rem;
+      border-bottom-left-radius: 1.5rem;
+      border-bottom-right-radius: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 10px 20px rgba(15, 41, 66, 0.15);
+    }
+    .mobile-header img { height: 32px; }
+
+    /* Bottom Navigation Bar (iOS/Android Native Feel) */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(226,232,240,0.8);
+      display: flex;
+      justify-content: space-around;
+      padding: 0.75rem 0.5rem;
+      padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+      z-index: 1000;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: var(--font-heading);
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    .nav-item.active { color: var(--primary-blue); }
+    .nav-icon { font-size: 1.4rem; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .nav-item.active .nav-icon { transform: translateY(-4px) scale(1.1); }
+
+    .mobile-content { padding: 1.5rem 1rem; }
+
+    /* 4B. ADMIN / MANAGER (DESKTOP SIDEBAR LAYOUT) */
+    body.role-admin #appView, body.role-manager #appView {
+      display: flex;
+      min-height: 100vh;
+      max-width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .sidebar {
+      width: 280px;
+      background: var(--primary-navy);
+      color: white;
+      padding: 2rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-logo { height: 48px; margin-bottom: 2.5rem; }
+    
+    .sidebar-menu { display: flex; flex-direction: column; gap: 0.75rem; flex: 1; }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      color: #94a3b8;
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      font-family: var(--font-heading);
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .sidebar-link:hover { background: rgba(255,255,255,0.05); color: white; }
+    .sidebar-link.active { background: var(--primary-blue); color: white; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem 3rem;
+      overflow-y: auto;
+      max-width: calc(100vw - 280px);
+    }
+    .desktop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; }
+    .desktop-header h2 { font-size: 2rem; color: var(--primary-navy); }
+
+    /* =========================================================================
+       5. FEDEX-BEATING VERTICAL TRACKER (OFFICER PANEL)
+       ========================================================================= */
+    .fedex-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid #e2e8f0;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 1.5rem;
+      transition: all 0.3s;
+    }
+    .fedex-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); border-color: #cbd5e1; }
+    
+    .fedex-card-header {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 1.25rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+    }
+    /* Map Pattern Background */
+    .fedex-card-header::before {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 12px 12px; opacity: 0.3; pointer-events: none;
+    }
+    
+    .tracking-number { font-size: 1.3rem; font-family: var(--font-heading); font-weight: 800; color: var(--primary-navy); letter-spacing: -0.02em; }
+    
+    .sla-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      padding: 0.4rem 0.8rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-top: 0.5rem;
+      animation: gentlePulse 2s infinite;
+    }
+    @keyframes gentlePulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+
+    .vehicle-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      background: #ffffff;
+      border-bottom: 1px dashed #cbd5e1;
+    }
+    .v-info-item { display: flex; flex-direction: column; }
+    .v-lbl { font-size: 0.65rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.05em; }
+    .v-val { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+
+    /* The Vertical Timeline */
+    .timeline-container { padding: 1.5rem 1.25rem 2rem 1.25rem; position: relative; }
+    .timeline-line {
+      position: absolute;
+      left: 2.25rem; /* center of icons */
+      top: 1.5rem;
+      bottom: 2rem;
+      width: 2px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    .timeline-progress {
+      position: absolute;
+      top: 0; left: 0; width: 100%;
+      background: linear-gradient(180deg, var(--primary-blue) 0%, var(--status-emerald) 100%);
+      z-index: 1;
+      transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .timeline-step {
+      display: flex;
+      gap: 1.25rem;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 1.75rem;
+    }
+    .timeline-step:last-child { margin-bottom: 0; }
+    
+    .step-icon-wrapper {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1rem;
+      transition: all 0.3s;
+    }
+    
+    .timeline-step.completed .step-icon-wrapper {
+      background: var(--status-emerald);
+      border-color: var(--status-emerald);
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+    }
+    .timeline-step.active .step-icon-wrapper {
+      background: var(--primary-blue);
+      border-color: var(--primary-blue);
+      color: #fff;
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.3);
+      animation: pulseActive 2s infinite;
+    }
+    @keyframes pulseActive { 0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); } 100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); } }
+
+    .step-content { flex: 1; padding-top: 0.1rem; }
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--primary-navy); margin-bottom: 0.1rem; }
+    .step-location { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.25rem; }
+    .step-time { font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem; font-family: monospace; }
+    
+    .timeline-step.pending .step-title, .timeline-step.pending .step-location { color: #94a3b8; }
+
+    /* Action Footer */
+    .fedex-action-area { padding: 1rem 1.25rem; background: #f8fafc; border-top: 1px solid #e2e8f0; }
+
+    /* =========================================================================
+       6. DATA TABLES (DESKTOP)
+       ========================================================================= */
+    .table-container { overflow-x: auto; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid #e2e8f0; }
+    .data-table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; }
+    .data-table th { 
+      padding: 1rem 1.25rem; 
+      background: #f8fafc; 
+      color: #475569; 
+      font-weight: 700; 
+      font-size: 0.75rem; 
+      text-transform: uppercase; 
+      letter-spacing: 0.05em; 
+      border-bottom: 1px solid var(--border-color);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .data-table td { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #1e293b; font-weight: 500; }
+    .data-table tr:hover td { background-color: #f8fafc; }
+    
+    .badge { padding: 0.35rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .badge-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-blue { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .badge-emerald { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+
+    /* KPI Grid Admin */
+    .admin-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .admin-kpi { background: white; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; position: relative; overflow: hidden; }
+    .admin-kpi::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(2,132,199,0.1) 0%, transparent 70%); border-radius: 50%; }
+    .admin-kpi h3 { font-size: 2.5rem; color: var(--primary-navy); margin-top: 0.5rem; line-height: 1; }
+    .admin-kpi p { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  </style>
+</head>
+<body id="bodyTag">
+
+  <!-- =========================================================================
+       LOGIN SCREEN
+       ========================================================================= -->
+  <div id="loginView" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-card-top">
+        <img src="https://i.ibb.co.com/N2kYDkbt/ACI-Motors-Logo-AI-White.png" alt="ACI Motors" class="logo-img" style="height: 52px; margin-bottom: 0.5rem;">
+        <h1 style="font-size: 1.4rem; font-weight: 800;">Ownership Papers Portal</h1>
+        <p style="color: #cbd5e1; font-size: 0.85rem; margin-top: 0.2rem;">Elite Enterprise Tracking System</p>
+      </div>
+
+      <div id="loginAlert"></div>
+
+      <label class="input-label" style="text-align: left;">Select Access Level</label>
+      <div class="role-selector">
+        <button type="button" class="role-btn active" id="btnRoleFF" onclick="selectRole('FIELD_FORCE')">
+          <span style="font-size:1.2rem;">📱</span>
+          <span>Field Force</span>
+        </button>
+        <button type="button" class="role-btn" id="btnRoleMGR" onclick="selectRole('MANAGER')">
+          <span style="font-size:1.2rem;">💼</span>
+          <span>Manager</span>
+        </button>
+        <button type="button" class="role-btn" id="btnRoleADM" onclick="selectRole('ADMIN')">
+          <span style="font-size:1.2rem;">🔑</span>
+          <span>Admin</span>
+        </button>
+      </div>
+
+      <button type="button" class="quick-preset-btn" onclick="fillQuickPreset()">
+        ⚡ Load Quick Demo Credentials
+      </button>
+
+      <form id="loginForm">
+        <input type="hidden" id="loginRole" value="FIELD_FORCE">
+        <div class="input-group">
+          <label class="input-label">Staff ID</label>
+          <input type="text" id="loginStaffId" class="input-field" placeholder="Enter Staff ID" required>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Password</label>
+          <input type="password" id="loginPassword" class="input-field" placeholder="Enter password" required>
+          <button type="button" class="eye-btn" onclick="togglePasswordVisibility()">👁️</button>
+        </div>
+        <button type="submit" id="submitBtn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 1rem; font-size: 1rem;">
+          Secure Login
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MAIN APP WRAPPER
+       ========================================================================= -->
+  <div id="appView" class="hidden">
+    
+    <!-- DESKTOP SIDEBAR (ADMIN & MANAGER ONLY) -->
+    <aside id="desktopSidebar" class="sidebar hidden">
+      <img src="https://i.ibb.co.com/N2kYDkbt/ACI-Motors-Logo-AI-White.png" alt="ACI Motors" class="sidebar-logo">
+      
+      <!-- Admin Menu -->
+      <nav id="adminMenu" class="sidebar-menu hidden">
+        <a class="sidebar-link active" id="linkAdmOverview" onclick="switchAdminTab('overview')">📊 Executive Overview</a>
+        <a class="sidebar-link" id="linkAdmUsers" onclick="switchAdminTab('users')">👥 User Management</a>
+        <a class="sidebar-link" id="linkAdmCsv" onclick="switchAdminTab('csv')">📁 Data Hub (CSV)</a>
+      </nav>
+      
+      <!-- Manager Menu -->
+      <nav id="managerMenu" class="sidebar-menu hidden">
+        <a class="sidebar-link active">💼 Territory Approvals</a>
+      </nav>
+
+      <div style="margin-top: auto;">
+        <div style="padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 1rem; margin-bottom: 1rem;">
+          <p style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Logged in as</p>
+          <p id="desktopUserName" style="font-size: 1rem; font-weight: 700; color: white;">Admin User</p>
+        </div>
+        <button class="btn btn-danger" onclick="logout()" style="width: 100%;">🚪 Logout Securely</button>
+      </div>
+    </aside>
+
+    <!-- MOBILE HEADER (FIELD FORCE ONLY) -->
+    <header id="mobileHeader" class="mobile-header hidden">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="https://i.ibb.co.com/N2kYDkbt/ACI-Motors-Logo-AI-White.png" alt="ACI Motors">
+      </div>
+      <div id="mobileTerritoryBadge" style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700;">
+        Zone D
+      </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main id="mainContentArea" class="main-content">
+      
+      <!-- ================= FIELD FORCE (MOBILE LAYOUT) ================= -->
+      <div id="fieldForcePanel" class="hidden mobile-content">
+        
+        <!-- Tab: Home/Tracker -->
+        <div id="ffTrackerTab">
+          <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Track Shipments</h2>
+          <div class="input-group" style="margin-bottom: 1.5rem;">
+            <input type="text" id="ffSearchInput" class="input-field" placeholder="Enter Tracking / Customer / Chassis No..." style="box-shadow: var(--shadow-sm); padding: 1rem 1.25rem;">
+            <button class="btn btn-primary" onclick="searchVehicles()" style="position: absolute; right: 0.5rem; top: 0.5rem; padding: 0.5rem 1rem;">Track</button>
+          </div>
+
+          <div id="vehicleResultsList">
+            <!-- FedEx style cards injected here -->
+            <p style="text-align: center; color: var(--text-secondary); margin-top: 2rem; font-size: 0.9rem;">Enter a tracking number to view paper status.</p>
+          </div>
+        </div>
+
+        <!-- Tab: History -->
+        <div id="ffHistoryTab" class="hidden">
+          <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">My Requests</h2>
+          <div id="ffHistoryList"></div>
+        </div>
+        
+        <!-- Tab: Profile -->
+        <div id="ffProfileTab" class="hidden">
+          <div class="glass-panel" style="text-align: center; padding: 2rem 1.5rem;">
+            <div style="width: 80px; height: 80px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; margin: 0 auto 1rem auto;">
+              👮
+            </div>
+            <h2 id="profileName" style="font-size: 1.5rem; margin-bottom: 0.25rem;">Officer Name</h2>
+            <p id="profileId" style="color: var(--text-secondary); font-weight: 600; margin-bottom: 1.5rem;">FF01</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; text-align: left;">
+               <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0;">
+                 <p style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Vehicles</p>
+                 <h3 id="profileVCount" style="font-size: 1.5rem; color: var(--primary-navy);">0</h3>
+               </div>
+               <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0;">
+                 <p style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Pending</p>
+                 <h3 id="profileRCount" style="font-size: 1.5rem; color: var(--status-amber);">0</h3>
+               </div>
+            </div>
+
+            <button class="btn btn-danger" onclick="logout()" style="width: 100%; padding: 1rem;">🚪 Logout</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= MANAGER PANEL (DESKTOP) ================= -->
+      <div id="managerPanel" class="hidden">
+        <div class="desktop-header">
+          <h2>Territory Approvals</h2>
+        </div>
+        <div class="glass-panel">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Req ID</th>
+                  <th>Vehicle Code</th>
+                  <th>Registration</th>
+                  <th>Officer</th>
+                  <th>Submitted Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="managerReqTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= SUPER ADMIN PANEL (DESKTOP) ================= -->
+      <div id="adminPanel" class="hidden">
+        
+        <!-- Overview Tab -->
+        <div id="adminOverviewTab">
+          <div class="desktop-header">
+            <h2>Executive Dashboard</h2>
+          </div>
+          
+          <div class="admin-kpi-grid">
+            <div class="admin-kpi">
+              <p>Active Users</p>
+              <h3 id="statUsers">0</h3>
+            </div>
+            <div class="admin-kpi">
+              <p>Registered Vehicles</p>
+              <h3 id="statVehicles" style="color: var(--status-emerald);">0</h3>
+            </div>
+            <div class="admin-kpi">
+              <p>Active Requisitions</p>
+              <h3 id="statReqs" style="color: var(--status-amber);">0</h3>
+            </div>
+          </div>
+
+          <div class="glass-panel">
+            <h3 style="margin-bottom: 1.25rem; font-size: 1.25rem;">Global Pipeline Monitor</h3>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Tracking ID</th>
+                    <th>Customer</th>
+                    <th>Officer</th>
+                    <th>Zone</th>
+                    <th>Submitted</th>
+                    <th>SLA Limit</th>
+                    <th>Current Stage</th>
+                  </tr>
+                </thead>
+                <tbody id="adminReqTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="adminUsersTab" class="hidden">
+           <div class="desktop-header">
+            <h2>User Management</h2>
+          </div>
+          <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem;">
+            <div class="glass-panel" style="height: fit-content;">
+              <h3 style="margin-bottom: 1.5rem; font-size: 1.2rem;">Provision Account</h3>
+              <form id="userForm">
+                <div class="input-group">
+                  <label class="input-label">Staff ID</label>
+                  <input type="text" id="uStaffId" class="input-field" placeholder="e.g. FF02" required>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Full Name</label>
+                  <input type="text" id="uName" class="input-field" required>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Role</label>
+                  <select id="uRole" class="input-field">
+                    <option value="FIELD_FORCE">Field Force</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="ADMIN">Super Admin</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Zone Code</label>
+                  <input type="text" id="uAreaCode" class="input-field" placeholder="e.g. D">
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Password</label>
+                  <input type="password" id="uPassword" class="input-field" placeholder="Leave blank for default">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Account</button>
+              </form>
+            </div>
+            
+            <div class="glass-panel">
+              <div class="table-container">
+                <table class="data-table">
+                  <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Zone</th><th>Action</th></tr></thead>
+                  <tbody id="usersTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CSV Tab -->
+        <div id="adminCsvTab" class="hidden">
+          <div class="desktop-header">
+            <h2>Data Hub</h2>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div class="glass-panel">
+              <h3 style="margin-bottom: 1rem;">📥 Bulk Import Vehicles</h3>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Upload CSV (Code, CustomerName, RegistrationNo, EngineNo, ChassisNo, Status).</p>
+              <input type="file" id="csvFileInput" accept=".csv" class="input-field" style="margin-bottom: 1.5rem;">
+              <button class="btn btn-primary" onclick="uploadCsv()">Sync to Database</button>
+            </div>
+            <div class="glass-panel">
+              <h3 style="margin-bottom: 1rem;">📤 Export Master Data</h3>
+              <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-outline" onclick="exportCsv('vehicles')">Download Vehicles CSV</button>
+                <button class="btn btn-outline" onclick="exportCsv('requisitions')">Download Requisitions CSV</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAV (FIELD FORCE ONLY) -->
+    <nav id="mobileBottomNav" class="bottom-nav hidden">
+      <a class="nav-item active" id="navTrackerBtn" onclick="switchMobileNav('tracker')">
+        <span class="nav-icon">📦</span>
+        <span>Tracker</span>
+      </a>
+      <a class="nav-item" id="navHistoryBtn" onclick="switchMobileNav('history')">
+        <span class="nav-icon">📋</span>
+        <span>History</span>
+      </a>
+      <a class="nav-item" id="navProfileBtn" onclick="switchMobileNav('profile')">
+        <span class="nav-icon">👤</span>
+        <span>Profile</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <script>
+    const API_URL = 'api.php';
+    const SESSION_KEY = 'foton_user_session_v2';
+    let currentUser = null;
+
+    // INIT
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedSession = localStorage.getItem(SESSION_KEY);
+      if (savedSession) {
+        try {
+          currentUser = JSON.parse(savedSession);
+          setupUserSession();
+        } catch (e) {
+          localStorage.removeItem(SESSION_KEY);
+        }
+      } else {
+        fillQuickPreset();
+      }
+    });
+
+    // LOGIN LOGIC
+    function selectRole(role) {
+      document.getElementById('loginRole').value = role;
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      
+      if (role === 'FIELD_FORCE') document.getElementById('btnRoleFF').classList.add('active');
+      else if (role === 'MANAGER') document.getElementById('btnRoleMGR').classList.add('active');
+      else document.getElementById('btnRoleADM').classList.add('active');
+      
+      fillQuickPreset();
+    }
+
+    function fillQuickPreset() {
+      const role = document.getElementById('loginRole').value;
+      document.getElementById('loginStaffId').value = role === 'FIELD_FORCE' ? 'FF01' : role === 'MANAGER' ? 'MGR01' : 'ADMIN01';
+      document.getElementById('loginPassword').value = '123456';
+    }
+
+    function togglePasswordVisibility() {
+      const p = document.getElementById('loginPassword');
+      p.type = p.type === 'password' ? 'text' : 'password';
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const role = document.getElementById('loginRole').value;
+      const identifier = document.getElementById('loginStaffId').value;
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('submitBtn');
+      
+      btn.innerHTML = 'Authenticating...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_URL}?action=login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password, role })
+        });
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          currentUser = data.user;
+          localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+          setupUserSession();
+        } else {
+          document.getElementById('loginAlert').innerHTML = `<div class="alert alert-error">${data.message}</div>`;
+        }
+      } catch (err) {
+        document.getElementById('loginAlert').innerHTML = `<div class="alert alert-error">Connection Error</div>`;
+      } finally {
+        btn.innerHTML = 'Secure Login';
+        btn.disabled = false;
+      }
+    });
+
+    // ARCHITECTURE SETUP
+    function setupUserSession() {
+      document.getElementById('loginView').classList.add('hidden');
+      document.getElementById('appView').classList.remove('hidden');
+      document.getElementById('bodyTag').className = `role-${currentUser.role.toLowerCase().replace('_', '-')}`;
+
+      if (currentUser.role === 'FIELD_FORCE') {
+        document.getElementById('mobileHeader').classList.remove('hidden');
+        document.getElementById('mobileBottomNav').classList.remove('hidden');
+        document.getElementById('fieldForcePanel').classList.remove('hidden');
+        document.getElementById('mobileTerritoryBadge').innerText = `Zone ${currentUser.areaCode || 'D'}`;
+        
+        // Profile setup
+        document.getElementById('profileName').innerText = currentUser.name || currentUser.staffId;
+        document.getElementById('profileId').innerText = currentUser.staffId;
+        
+        switchMobileNav('tracker');
+        loadFFProfileData();
+        searchVehicles(''); // Load all initially or leave blank
+      } else {
+        // Desktop Layout
+        document.getElementById('desktopSidebar').classList.remove('hidden');
+        document.getElementById('desktopUserName').innerText = currentUser.name || currentUser.staffId;
+        
+        if (currentUser.role === 'ADMIN') {
+          document.getElementById('adminMenu').classList.remove('hidden');
+          document.getElementById('adminPanel').classList.remove('hidden');
+          switchAdminTab('overview');
+        } else {
+          document.getElementById('managerMenu').classList.remove('hidden');
+          document.getElementById('managerPanel').classList.remove('hidden');
+          loadManagerReqs();
+        }
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem(SESSION_KEY);
+      window.location.reload();
+    }
+
+    // FIELD FORCE ROUTING (BOTTOM NAV)
+    function switchMobileNav(tab) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('ffTrackerTab').classList.add('hidden');
+      document.getElementById('ffHistoryTab').classList.add('hidden');
+      document.getElementById('ffProfileTab').classList.add('hidden');
+
+      if (tab === 'tracker') {
+        document.getElementById('navTrackerBtn').classList.add('active');
+        document.getElementById('ffTrackerTab').classList.remove('hidden');
+      } else if (tab === 'history') {
+        document.getElementById('navHistoryBtn').classList.add('active');
+        document.getElementById('ffHistoryTab').classList.remove('hidden');
+        loadFFHistory();
+      } else if (tab === 'profile') {
+        document.getElementById('navProfileBtn').classList.add('active');
+        document.getElementById('ffProfileTab').classList.remove('hidden');
+        loadFFProfileData();
+      }
+    }
+
+    async function loadFFProfileData() {
+      const resV = await fetch(`${API_URL}?action=vehicles`);
+      const dataV = await resV.json();
+      if (dataV.status === 'success') document.getElementById('profileVCount').innerText = dataV.vehicles.length || 0;
+
+      const resR = await fetch(`${API_URL}?action=requisitions`);
+      const dataR = await resR.json();
+      if (dataR.status === 'success') document.getElementById('profileRCount').innerText = dataR.requisitions.length || 0;
+    }
+
+    // ELITE FEDEX TRACKER RENDERER
+    async function searchVehicles(query = null) {
+      const q = query !== null ? query : document.getElementById('ffSearchInput').value;
+      if (!q && query === null) return; // wait for input
+
+      const res = await fetch(`${API_URL}?action=vehicles&search=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const container = document.getElementById('vehicleResultsList');
+      
+      if (data.status === 'success' && data.vehicles.length > 0) {
+        container.innerHTML = data.vehicles.map(v => {
+          
+          // Logic for stages
+          let pHeight = '0%';
+          let s1 = '', s2 = '', s3 = '', s4 = '';
+          let slaHtml = '';
+          let dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+
+          if (v.status === 'Not Processed') {
+            s1 = 'pending'; s2 = 'pending'; s3 = 'pending'; s4 = 'pending';
+          } else if (v.status === 'Processing' || v.status === 'Approved') {
+            pHeight = '50%';
+            s1 = 'completed'; s2 = 'active'; s3 = 'pending'; s4 = 'pending';
+            slaHtml = `<div class="sla-banner">⏳ SLA: 16 Days Remaining</div>`;
+          } else if (v.status === 'Processed' || v.status === 'Delivered') {
+            pHeight = '100%';
+            s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'completed';
+            slaHtml = `<div class="sla-banner" style="background:#dcfce7; color:#15803d; border-color:#bbf7d0;">✅ Delivered Successfully</div>`;
+          }
+
+          const actionBtn = (v.status === 'Not Processed') 
+            ? `<button class="btn btn-primary" onclick="submitRequisition('${v.code}')" style="width: 100%;">Create Paper Request</button>`
+            : `<button class="btn btn-outline" style="width: 100%; pointer-events:none;">Transfer In Progress</button>`;
+
+          return `
+            <div class="fedex-card">
+              <div class="fedex-card-header">
+                <div>
+                  <div class="tracking-number">${v.code}</div>
+                  <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.1rem;">${v.customerName || 'Customer'}</div>
+                  ${slaHtml}
+                </div>
+                <div style="font-size: 2rem; opacity: 0.8;">🗺️</div>
+              </div>
+              
+              <div class="vehicle-info-grid">
+                <div class="v-info-item"><span class="v-lbl">Reg No</span><span class="v-val">${v.registrationNo || '-'}</span></div>
+                <div class="v-info-item"><span class="v-lbl">Chassis</span><span class="v-val">${v.chassisNoPrimary || '-'}</span></div>
+              </div>
+
+              <!-- Vertical Timeline -->
+              <div class="timeline-container">
+                <div class="timeline-line">
+                  <div class="timeline-progress" style="height: ${pHeight};"></div>
+                </div>
+                
+                <div class="timeline-step ${s1}">
+                  <div class="step-icon-wrapper">📝</div>
+                  <div class="step-content">
+                    <div class="step-title">Requisition Submitted</div>
+                    <div class="step-location">📍 Officer Terminal</div>
+                    ${s1 === 'completed' ? `<div class="step-time">${dateStr} 10:45 AM</div>` : ''}
+                  </div>
+                </div>
+                
+                <div class="timeline-step ${s2}">
+                  <div class="step-icon-wrapper">🏢</div>
+                  <div class="step-content">
+                    <div class="step-title">Manager Verification</div>
+                    <div class="step-location">📍 Zonal Office</div>
+                    ${s2 === 'completed' ? `<div class="step-time">${dateStr} 02:15 PM</div>` : ''}
+                    ${s2 === 'active' ? `<div class="step-time" style="color:var(--primary-blue);">In Progress...</div>` : ''}
+                  </div>
+                </div>
+                
+                <div class="timeline-step ${s3}">
+                  <div class="step-icon-wrapper">🚚</div>
+                  <div class="step-content">
+                    <div class="step-title">Papers Dispatched</div>
+                    <div class="step-location">📍 BRTA Courier Hub</div>
+                  </div>
+                </div>
+                
+                <div class="timeline-step ${s4}">
+                  <div class="step-icon-wrapper">✅</div>
+                  <div class="step-content">
+                    <div class="step-title">Delivered to Customer</div>
+                    <div class="step-location">📍 Customer Address</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="fedex-action-area">
+                ${actionBtn}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No active shipments found.</p>`;
+      }
+    }
+
+    async function submitRequisition(code) {
+      if (!confirm(`Initialize paper transfer request for ${code}?`)) return;
+      const res = await fetch(`${API_URL}?action=requisition`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleCode: code, officerStaffId: currentUser.staffId })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        searchVehicles(code);
+      } else alert('Failed to create request.');
+    }
+
+    async function loadFFHistory() {
+      const res = await fetch(`${API_URL}?action=requisitions`);
+      const data = await res.json();
+      const container = document.getElementById('ffHistoryList');
+      if (data.status === 'success' && data.requisitions.length > 0) {
+        container.innerHTML = data.requisitions.map(r => `
+          <div class="glass-panel" style="padding: 1.25rem;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+              <span style="font-weight: 800; color: var(--primary-navy);">${r.requisitionId}</span>
+              <span class="badge ${r.status === 'Processing' ? 'badge-blue' : 'badge-emerald'}">${r.status}</span>
+            </div>
+            <p style="font-size: 0.9rem; font-weight: 600;">Vehicle: ${r.vehicleCode}</p>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">SLA Deadline: ${r.deadline}</p>
+          </div>
+        `).join('');
+      } else {
+        container.innerHTML = `<p style="text-align: center;">No history found.</p>`;
+      }
+    }
+
+    // DESKTOP ADMIN & MANAGER LOGIC
+    function switchAdminTab(tab) {
+      document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+      document.getElementById('adminOverviewTab').classList.add('hidden');
+      document.getElementById('adminUsersTab').classList.add('hidden');
+      document.getElementById('adminCsvTab').classList.add('hidden');
+
+      if (tab === 'overview') {
+        document.getElementById('linkAdmOverview').classList.add('active');
+        document.getElementById('adminOverviewTab').classList.remove('hidden');
+        loadAdminOverview();
+      } else if (tab === 'users') {
+        document.getElementById('linkAdmUsers').classList.add('active');
+        document.getElementById('adminUsersTab').classList.remove('hidden');
+        loadAdminUsers();
+      } else {
+        document.getElementById('linkAdmCsv').classList.add('active');
+        document.getElementById('adminCsvTab').classList.remove('hidden');
+      }
+    }
+
+    async function loadAdminOverview() {
+      const res = await fetch(`${API_URL}?action=status`);
+      const data = await res.json();
+      if (data.status === 'online') {
+        document.getElementById('statUsers').innerText = data.usersCount || 0;
+        document.getElementById('statVehicles').innerText = data.vehiclesCount || 0;
+        document.getElementById('statReqs').innerText = data.requisitionsCount || 0;
+      }
+      
+      const resReq = await fetch(`${API_URL}?action=requisitions`);
+      const dataReq = await resReq.json();
+      const tbody = document.getElementById('adminReqTable');
+      if (dataReq.status === 'success') {
+        tbody.innerHTML = dataReq.requisitions.map(r => `
+          <tr>
+            <td style="font-weight: 700;">${r.requisitionId}</td>
+            <td>${r.vehicleCode}</td>
+            <td>${r.officerStaffId}</td>
+            <td>D</td>
+            <td>${r.submissionDate}</td>
+            <td style="color:var(--danger-color); font-weight:700;">${r.deadline}</td>
+            <td><span class="badge badge-blue">${r.status}</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    async function loadAdminUsers() {
+      const res = await fetch(`${API_URL}?action=users`);
+      const data = await res.json();
+      const tbody = document.getElementById('usersTableBody');
+      if (data.status === 'success') {
+        tbody.innerHTML = data.users.map(u => `
+          <tr>
+            <td style="font-weight: 700;">${u.staffId}</td>
+            <td>${u.name}</td>
+            <td><span class="badge badge-amber">${u.role}</span></td>
+            <td>${u.areaCode || '-'}</td>
+            <td><button class="btn btn-danger" style="padding:0.4rem 0.8rem; font-size:0.8rem;" onclick="deleteUser('${u.staffId}')">Delete</button></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    document.getElementById('userForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        staffId: document.getElementById('uStaffId').value,
+        name: document.getElementById('uName').value,
+        password: document.getElementById('uPassword').value,
+        role: document.getElementById('uRole').value,
+        areaCode: document.getElementById('uAreaCode').value
+      };
+      await fetch(`${API_URL}?action=users`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      loadAdminUsers();
+      e.target.reset();
+    });
+
+    async function deleteUser(id) {
+      if(!confirm('Delete user?')) return;
+      await fetch(`${API_URL}?action=users&delete=${id}`, { method: 'DELETE' });
+      loadAdminUsers();
+    }
+
+    async function uploadCsv() {
+      const file = document.getElementById('csvFileInput').files[0];
+      if (!file) return alert('Select CSV');
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const lines = e.target.result.split('\n').filter(l => l.trim().length>0);
+        const headers = lines[0].split(',').map(h=>h.trim());
+        const rows = lines.slice(1).map(l => {
+          const vals = l.split(',').map(v=>v.trim());
+          let obj = {}; headers.forEach((h,i)=>obj[h]=vals[i]); return obj;
+        });
+        await fetch(`${API_URL}?action=upload_csv`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({rows}) });
+        alert('Upload complete');
+      };
+      reader.readAsText(file);
+    }
+
+    async function exportCsv(type) {
+      const res = await fetch(`${API_URL}?action=export_csv&type=${type}`);
+      const data = await res.json();
+      if(data.status==='success' && data.data.length>0) {
+        const keys = Object.keys(data.data[0]);
+        const csv = [keys.join(','), ...data.data.map(r => keys.map(k=>`"${r[k]||''}"`).join(','))].join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+        a.download = `${type}.csv`;
+        a.click();
+      }
+    }
+
+    async function loadManagerReqs() {
+      const res = await fetch(`${API_URL}?action=requisitions`);
+      const data = await res.json();
+      const tbody = document.getElementById('managerReqTable');
+      if (data.status === 'success') {
+        tbody.innerHTML = data.requisitions.map(r => `
+          <tr>
+            <td style="font-weight: 700;">${r.requisitionId}</td>
+            <td>${r.vehicleCode}</td>
+            <td>${r.registrationNo || '-'}</td>
+            <td>${r.officerStaffId}</td>
+            <td>${r.submissionDate}</td>
+            <td><span class="badge badge-amber">Approve</span></td>
+          </tr>
+        `).join('');
+      }
+    }
+
+  </script>
+</body>
+</html>
