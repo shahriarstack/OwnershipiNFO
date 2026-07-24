@@ -290,8 +290,37 @@ if ($action === 'requisition') {
     $reqId = "REQ-" . rand(10000, 99999);
     $stmt = $pdo->prepare("INSERT INTO requisitions (requisitionId, vehicleCode, officerStaffId, status) VALUES (?, ?, ?, 'Pending')");
     $stmt->execute([$reqId, $vehicleCode, $officerStaffId]);
+    
+    $vStmt = $pdo->prepare("UPDATE vehicles SET status = 'Pending' WHERE code = ?");
+    $vStmt->execute([$vehicleCode]);
 
     echo json_encode(["status" => "success", "requisitionId" => $reqId, "message" => "Requisition submitted successfully."]);
+    exit();
+}
+
+if ($action === 'update_req_status') {
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $reqId = trim($input['requisitionId'] ?? '');
+    $newStatus = trim($input['newStatus'] ?? '');
+    
+    if (!$reqId || !$newStatus) {
+        echo json_encode(["status" => "error", "message" => "Missing parameters"]);
+        exit();
+    }
+    
+    $stmt = $pdo->prepare("UPDATE requisitions SET status = ? WHERE requisitionId = ?");
+    $stmt->execute([$newStatus, $reqId]);
+    
+    if ($newStatus === 'Rejected') {
+        $vStatus = 'Not Processed';
+    } else {
+        $vStatus = $newStatus;
+    }
+    
+    $vStmt = $pdo->prepare("UPDATE vehicles SET status = ? WHERE code = (SELECT vehicleCode FROM requisitions WHERE requisitionId = ?)");
+    $vStmt->execute([$vStatus, $reqId]);
+    
+    echo json_encode(["status" => "success", "message" => "Status updated to " . $newStatus]);
     exit();
 }
 

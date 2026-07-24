@@ -902,7 +902,7 @@
       if (dataR.status === 'success') document.getElementById('profileRCount').innerText = dataR.requisitions.length || 0;
     }
 
-    // ELITE FEDEX TRACKER RENDERER
+    // CORPORATE TRACKER RENDERER
     async function searchVehicles(query = null) {
       const q = query !== null ? query : document.getElementById('ffSearchInput').value;
       if (!q && query === null) return; // wait for input
@@ -920,21 +920,29 @@
           let slaHtml = '';
           let dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
 
-          if (v.status === 'Not Processed') {
+          if (v.status === 'Not Processed' || v.status === '') {
             s1 = 'pending'; s2 = 'pending'; s3 = 'pending'; s4 = 'pending';
-          } else if (v.status === 'Processing' || v.status === 'Approved') {
-            pHeight = '50%';
+          } else if (v.status === 'Pending') {
+            pHeight = '25%';
             s1 = 'completed'; s2 = 'active'; s3 = 'pending'; s4 = 'pending';
+            slaHtml = `<div class="sla-banner">⏳ Awaiting Manager Approval</div>`;
+          } else if (v.status === 'Approved') {
+            pHeight = '50%';
+            s1 = 'completed'; s2 = 'completed'; s3 = 'active'; s4 = 'pending';
             slaHtml = `<div class="sla-banner">⏳ SLA: 16 Days Remaining</div>`;
-          } else if (v.status === 'Processed' || v.status === 'Delivered') {
+          } else if (v.status === 'HO Processing') {
+            pHeight = '75%';
+            s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'active';
+            slaHtml = `<div class="sla-banner" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">⚙️ Head Office Processing</div>`;
+          } else if (v.status === 'Completed' || v.status === 'Delivered') {
             pHeight = '100%';
             s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'completed';
-            slaHtml = `<div class="sla-banner" style="background:#dcfce7; color:#15803d; border-color:#bbf7d0;">✅ Delivered Successfully</div>`;
+            slaHtml = `<div class="sla-banner" style="background:#dcfce7; color:#15803d; border-color:#bbf7d0;">✅ Process Completed</div>`;
           }
 
-          const actionBtn = (v.status === 'Not Processed') 
+          const actionBtn = (v.status === 'Not Processed' || v.status === '') 
             ? `<button class="btn btn-primary" onclick="submitRequisition('${v.code}')" style="width: 100%;">Create Paper Request</button>`
-            : `<button class="btn btn-outline" style="width: 100%; pointer-events:none;">Transfer In Progress</button>`;
+            : `<button class="btn btn-outline" style="width: 100%; pointer-events:none;">Process In Progress</button>`;
 
           return `
             <div class="fedex-card">
@@ -944,7 +952,7 @@
                   <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.1rem;">${v.customerName || 'Customer'}</div>
                   ${slaHtml}
                 </div>
-                <div style="font-size: 2rem; opacity: 0.8;">🗺️</div>
+                <div style="font-size: 2rem; opacity: 0.8;">📄</div>
               </div>
               
               <div class="vehicle-info-grid">
@@ -963,33 +971,31 @@
                   <div class="step-content">
                     <div class="step-title">Requisition Submitted</div>
                     <div class="step-location">📍 Officer Terminal</div>
-                    ${s1 === 'completed' ? `<div class="step-time">${dateStr} 10:45 AM</div>` : ''}
                   </div>
                 </div>
                 
                 <div class="timeline-step ${s2}">
-                  <div class="step-icon-wrapper">🏢</div>
+                  <div class="step-icon-wrapper">👨‍💼</div>
                   <div class="step-content">
                     <div class="step-title">Manager Verification</div>
                     <div class="step-location">📍 Zonal Office</div>
-                    ${s2 === 'completed' ? `<div class="step-time">${dateStr} 02:15 PM</div>` : ''}
-                    ${s2 === 'active' ? `<div class="step-time" style="color:var(--primary-blue);">In Progress...</div>` : ''}
+                    ${s2 === 'active' ? `<div class="step-time" style="color:var(--primary-blue);">Awaiting Approval...</div>` : ''}
                   </div>
                 </div>
                 
                 <div class="timeline-step ${s3}">
-                  <div class="step-icon-wrapper">🚚</div>
+                  <div class="step-icon-wrapper">🏢</div>
                   <div class="step-content">
-                    <div class="step-title">Papers Dispatched</div>
-                    <div class="step-location">📍 BRTA Courier Hub</div>
+                    <div class="step-title">Head Office Processing</div>
+                    <div class="step-location">📍 Central Documentation Hub</div>
                   </div>
                 </div>
                 
                 <div class="timeline-step ${s4}">
                   <div class="step-icon-wrapper">✅</div>
                   <div class="step-content">
-                    <div class="step-title">Delivered to Customer</div>
-                    <div class="step-location">📍 Customer Address</div>
+                    <div class="step-title">Process Completed</div>
+                    <div class="step-location">📍 Ready for Customer</div>
                   </div>
                 </div>
               </div>
@@ -1001,7 +1007,7 @@
           `;
         }).join('');
       } else {
-        container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No active shipments found.</p>`;
+        container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No vehicle records found.</p>`;
       }
     }
 
@@ -1071,7 +1077,15 @@
       const dataReq = await resReq.json();
       const tbody = document.getElementById('adminReqTable');
       if (dataReq.status === 'success') {
-        tbody.innerHTML = dataReq.requisitions.map(r => `
+        tbody.innerHTML = dataReq.requisitions.map(r => {
+          let actionBtns = `<span class="badge badge-blue">${r.status}</span>`;
+          if (r.status === 'Approved') {
+            actionBtns = `<button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="updateReqStatus('${r.requisitionId}', 'HO Processing')">Start HO Processing</button>`;
+          } else if (r.status === 'HO Processing') {
+            actionBtns = `<button class="btn btn-success" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="updateReqStatus('${r.requisitionId}', 'Completed')">Mark Completed</button>`;
+          }
+          
+          return `
           <tr>
             <td style="font-weight: 700;">${r.requisitionId}</td>
             <td>${r.vehicleCode}</td>
@@ -1079,9 +1093,9 @@
             <td>D</td>
             <td>${r.submissionDate}</td>
             <td style="color:var(--danger-color); font-weight:700;">${r.deadline}</td>
-            <td><span class="badge badge-blue">${r.status}</span></td>
+            <td>${actionBtns}</td>
           </tr>
-        `).join('');
+        `}).join('');
       }
     }
 
@@ -1157,16 +1171,42 @@
       const data = await res.json();
       const tbody = document.getElementById('managerReqTable');
       if (data.status === 'success') {
-        tbody.innerHTML = data.requisitions.map(r => `
+        tbody.innerHTML = data.requisitions.map(r => {
+          let actionBtns = `<span class="badge badge-emerald">${r.status}</span>`;
+          if (r.status === 'Pending') {
+             actionBtns = `
+               <div style="display:flex; gap:0.5rem;">
+                 <button class="btn btn-success" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="updateReqStatus('${r.requisitionId}', 'Approved')">Approve</button>
+                 <button class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="updateReqStatus('${r.requisitionId}', 'Rejected')">Reject</button>
+               </div>
+             `;
+          }
+          return `
           <tr>
             <td style="font-weight: 700;">${r.requisitionId}</td>
             <td>${r.vehicleCode}</td>
             <td>${r.registrationNo || '-'}</td>
             <td>${r.officerStaffId}</td>
             <td>${r.submissionDate}</td>
-            <td><span class="badge badge-amber">Approve</span></td>
+            <td>${actionBtns}</td>
           </tr>
-        `).join('');
+        `}).join('');
+      }
+    }
+
+    async function updateReqStatus(reqId, newStatus) {
+      if (!confirm(`Update requisition ${reqId} to ${newStatus}?`)) return;
+      const res = await fetch(`${API_URL}?action=update_req_status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requisitionId: reqId, newStatus })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        if (currentUser.role === 'MANAGER') loadManagerReqs();
+        else if (currentUser.role === 'ADMIN') loadAdminOverview();
+      } else {
+        alert(data.message || 'Error updating status');
       }
     }
 
