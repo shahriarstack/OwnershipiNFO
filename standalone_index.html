@@ -464,6 +464,13 @@
     
     .loading-container { display: flex; justify-content: center; align-items: center; padding: 3rem; }
 
+  
+    .ff-req-card { background: var(--bg-card); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s; }
+    .ff-req-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .ff-req-details { display: none; padding-top: 1rem; margin-top: 1rem; border-top: 1px dashed #cbd5e1; }
+    .ff-req-card.open .ff-req-details { display: block; animation: slideDown 0.3s ease forwards; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
   </style>
 </head>
 <body id="bodyTag">
@@ -565,24 +572,38 @@
       <!-- ================= FIELD FORCE (MOBILE LAYOUT) ================= -->
       <div id="fieldForcePanel" class="hidden mobile-content">
         
-        <!-- Tab: Home/Tracker -->
-        <div id="ffTrackerTab">
-          <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Track Shipments</h2>
-          <div class="input-group" style="margin-bottom: 1.5rem;">
-            <input type="text" id="ffSearchInput" class="input-field" placeholder="Enter Tracking / Customer / Chassis No..." style="box-shadow: var(--shadow-sm); padding: 1rem 1.25rem;">
-            <button class="btn btn-primary" onclick="searchVehicles()" style="position: absolute; right: 0.5rem; top: 0.5rem; padding: 0.5rem 1rem;">Track</button>
+        <!-- Tab: Home / Search -->
+        <div id="ffHomeTab">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+            <div class="glass-panel" style="padding: 1rem; margin-bottom: 0;">
+              <p style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Total Reqs</p>
+              <h3 id="homeKpiTotal" style="font-size: 1.5rem; color: var(--primary-navy);">0</h3>
+            </div>
+            <div class="glass-panel" style="padding: 1rem; margin-bottom: 0;">
+              <p style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Pending Approval</p>
+              <h3 id="homeKpiPending" style="font-size: 1.5rem; color: var(--status-amber);">0</h3>
+            </div>
           </div>
 
-          <div id="vehicleResultsList">
-            <!-- FedEx style cards injected here -->
-            <p style="text-align: center; color: var(--text-secondary); margin-top: 2rem; font-size: 0.9rem;">Enter a tracking number to view paper status.</p>
+          <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Document Search</h2>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">Find a vehicle to initialize a request.</p>
+          <div class="input-group" style="margin-bottom: 1.5rem;">
+            <input type="text" id="ffSearchInput" class="input-field" placeholder="Enter Chassis or Reg No..." style="box-shadow: var(--shadow-sm); padding: 1rem 1.25rem;">
+            <button class="btn btn-primary" onclick="searchVehicles()" style="position: absolute; right: 0.5rem; top: 0.5rem; padding: 0.5rem 1rem;">Search</button>
           </div>
+          <div id="vehicleResultsList"></div>
         </div>
 
-        <!-- Tab: History -->
-        <div id="ffHistoryTab" class="hidden">
-          <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">My Requests</h2>
-          <div id="ffHistoryList"></div>
+        <!-- Tab: In Progress -->
+        <div id="ffProgressTab" class="hidden">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Active Requisitions</h2>
+          <div id="ffProgressList"></div>
+        </div>
+
+        <!-- Tab: Completed -->
+        <div id="ffCompletedTab" class="hidden">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Processing History</h2>
+          <div id="ffCompletedList"></div>
         </div>
         
         <!-- Tab: Profile -->
@@ -593,161 +614,6 @@
             </div>
             <h2 id="profileName" style="font-size: 1.5rem; margin-bottom: 0.25rem;">Officer Name</h2>
             <p id="profileId" style="color: var(--text-secondary); font-weight: 600; margin-bottom: 1.5rem;">FF01</p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; text-align: left;">
-               <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0;">
-                 <p style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Vehicles</p>
-                 <h3 id="profileVCount" style="font-size: 1.5rem; color: var(--primary-navy);">0</h3>
-               </div>
-               <div style="background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0;">
-                 <p style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Pending</p>
-                 <h3 id="profileRCount" style="font-size: 1.5rem; color: var(--status-amber);">0</h3>
-               </div>
-            </div>
-
-            <button class="btn btn-danger" onclick="logout()" style="width: 100%; padding: 1rem;">🚪 Logout</button>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ================= MANAGER PANEL (DESKTOP) ================= -->
-      <div id="managerPanel" class="hidden">
-        <div class="desktop-header">
-          <h2>Territory Approvals</h2>
-        </div>
-        <div class="glass-panel">
-          <div class="table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Req ID</th>
-                  <th>Vehicle Code</th>
-                  <th>Registration</th>
-                  <th>Officer</th>
-                  <th>Submitted Date</th>
-                  <th>Manager Remarks</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="managerReqTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= SUPER ADMIN PANEL (DESKTOP) ================= -->
-      <div id="adminPanel" class="hidden">
-        
-        <!-- Overview Tab -->
-        <div id="adminOverviewTab">
-          <div class="desktop-header">
-            <h2>Executive Dashboard</h2>
-          </div>
-          
-          <div class="admin-kpi-grid">
-            <div class="admin-kpi">
-              <p>Active Users</p>
-              <h3 id="statUsers">0</h3>
-            </div>
-            <div class="admin-kpi">
-              <p>Registered Vehicles</p>
-              <h3 id="statVehicles" style="color: var(--status-emerald);">0</h3>
-            </div>
-            <div class="admin-kpi">
-              <p>Active Requisitions</p>
-              <h3 id="statReqs" style="color: var(--status-amber);">0</h3>
-            </div>
-          </div>
-
-          <div class="glass-panel">
-            <h3 style="margin-bottom: 1.25rem; font-size: 1.25rem;">Global Pipeline Monitor</h3>
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Tracking ID</th>
-                    <th>Customer</th>
-                    <th>Officer</th>
-                    <th>Zone</th>
-                    <th>Submitted</th>
-                    <th>SLA Limit</th>
-                    <th>Current Stage</th>
-                  </tr>
-                </thead>
-                <tbody id="adminReqTable"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Users Tab -->
-        <div id="adminUsersTab" class="hidden">
-           <div class="desktop-header">
-            <h2>User Management</h2>
-          </div>
-          <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem;">
-            <div class="glass-panel" style="height: fit-content;">
-              <h3 style="margin-bottom: 1.5rem; font-size: 1.2rem;">Provision Account</h3>
-              <form id="userForm">
-                <div class="input-group">
-                  <label class="input-label">Staff ID</label>
-                  <input type="text" id="uStaffId" class="input-field" placeholder="e.g. FF02" required>
-                </div>
-                <div class="input-group">
-                  <label class="input-label">Full Name</label>
-                  <input type="text" id="uName" class="input-field" required>
-                </div>
-                <div class="input-group">
-                  <label class="input-label">Role</label>
-                  <select id="uRole" class="input-field">
-                    <option value="FIELD_FORCE">Field Force</option>
-                    <option value="MANAGER">Manager</option>
-                    <option value="ADMIN">Super Admin</option>
-                  </select>
-                </div>
-                <div class="input-group">
-                  <label class="input-label">Zone Code</label>
-                  <input type="text" id="uAreaCode" class="input-field" placeholder="e.g. D">
-                </div>
-                <div class="input-group">
-                  <label class="input-label">Password</label>
-                  <input type="password" id="uPassword" class="input-field" placeholder="Leave blank for default">
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Save Account</button>
-              </form>
-            </div>
-            
-            <div class="glass-panel">
-              <div class="table-container">
-                <table class="data-table">
-                  <thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Zone</th><th>Action</th></tr></thead>
-                  <tbody id="usersTableBody"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- CSV Tab -->
-        <div id="adminCsvTab" class="hidden">
-          <div class="desktop-header">
-            <h2>Data Hub</h2>
-          </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <div class="glass-panel">
-              <h3 style="margin-bottom: 1rem;">📥 Bulk Import Vehicles</h3>
-              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Upload CSV (Code, CustomerName, RegistrationNo, EngineNo, ChassisNo, Status).</p>
-              <input type="file" id="csvFileInput" accept=".csv" class="input-field" style="margin-bottom: 1.5rem;">
-              <button class="btn btn-primary" onclick="uploadCsv()">Sync to Database</button>
-            </div>
-            <div class="glass-panel">
-              <h3 style="margin-bottom: 1rem;">📤 Export Master Data</h3>
-              <div style="display: flex; gap: 1rem;">
-                <button class="btn btn-outline" onclick="exportCsv('vehicles')">Download Vehicles CSV</button>
-                <button class="btn btn-outline" onclick="exportCsv('requisitions')">Download Requisitions CSV</button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -757,12 +623,16 @@
 
     <!-- MOBILE BOTTOM NAV (FIELD FORCE ONLY) -->
     <nav id="mobileBottomNav" class="bottom-nav hidden">
-      <a class="nav-item active" id="navTrackerBtn" onclick="switchMobileNav('tracker')">
-        <span class="nav-icon">📦</span>
-        <span>Tracker</span>
+      <a class="nav-item active" id="navHomeBtn" onclick="switchMobileNav('home')">
+        <span class="nav-icon">🏠</span>
+        <span>Home</span>
       </a>
-      <a class="nav-item" id="navHistoryBtn" onclick="switchMobileNav('history')">
-        <span class="nav-icon">📋</span>
+      <a class="nav-item" id="navProgressBtn" onclick="switchMobileNav('progress')">
+        <span class="nav-icon">⏳</span>
+        <span>Progress</span>
+      </a>
+      <a class="nav-item" id="navCompletedBtn" onclick="switchMobileNav('completed')">
+        <span class="nav-icon">✅</span>
         <span>History</span>
       </a>
       <a class="nav-item" id="navProfileBtn" onclick="switchMobileNav('profile')">
@@ -777,6 +647,70 @@
     const API_URL = 'api.php';
     const SESSION_KEY = 'foton_user_session_v2';
     let currentUser = null;
+
+    
+    // CUSTOM MODAL LOGIC
+    function showCustomModal(options) {
+      return new Promise((resolve) => {
+        const overlay = document.getElementById('customModalOverlay');
+        const box = document.getElementById('customModalBox');
+        const title = document.getElementById('customModalTitle');
+        const msg = document.getElementById('customModalMessage');
+        const icon = document.getElementById('customModalIcon');
+        const input = document.getElementById('customModalInput');
+        const cancelBtn = document.getElementById('customModalCancelBtn');
+        const confirmBtn = document.getElementById('customModalConfirmBtn');
+
+        title.innerText = options.title || 'Notification';
+        msg.innerText = options.message || '';
+        icon.innerText = options.icon || '🔔';
+        input.style.display = 'none';
+        
+        confirmBtn.innerText = options.confirmText || 'OK';
+        if (options.type === 'alert') {
+          cancelBtn.style.display = 'none';
+          confirmBtn.className = 'btn btn-primary';
+        } else if (options.type === 'confirm') {
+          cancelBtn.style.display = 'block';
+          cancelBtn.innerText = 'Cancel';
+          confirmBtn.className = options.danger ? 'btn btn-danger' : 'btn btn-primary';
+        } else if (options.type === 'prompt') {
+          cancelBtn.style.display = 'block';
+          cancelBtn.innerText = 'Cancel';
+          confirmBtn.className = 'btn btn-primary';
+          input.style.display = 'block';
+          input.value = options.defaultText || '';
+          setTimeout(() => input.focus(), 100);
+        }
+
+        // Reset animations
+        icon.style.animation = 'none';
+        void icon.offsetWidth;
+        icon.style.animation = 'popIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards';
+
+        overlay.classList.remove('hidden');
+        void overlay.offsetWidth;
+        overlay.style.opacity = '1';
+        box.style.transform = 'translateY(0) scale(1)';
+
+        const close = (result) => {
+          overlay.style.opacity = '0';
+          box.style.transform = 'translateY(30px) scale(0.95)';
+          setTimeout(() => {
+            overlay.classList.add('hidden');
+            resolve(result);
+          }, 300);
+          cancelBtn.onclick = null;
+          confirmBtn.onclick = null;
+        };
+
+        cancelBtn.onclick = () => close(null);
+        confirmBtn.onclick = () => {
+          if (options.type === 'prompt') close(input.value);
+          else close(true);
+        };
+      });
+    }
 
     // INIT
     window.addEventListener('DOMContentLoaded', () => {
@@ -865,9 +799,8 @@
         document.getElementById('profileName').innerText = currentUser.name || currentUser.staffId;
         document.getElementById('profileId').innerText = currentUser.staffId;
         
-        switchMobileNav('tracker');
-        loadFFProfileData();
-        searchVehicles(''); // Load all initially or leave blank
+        switchMobileNav('home');
+        loadFFDashboard(); // Load all initially or leave blank
       } else {
         // Desktop Layout
         document.getElementById('desktopSidebar').classList.remove('hidden');
@@ -893,21 +826,110 @@
     // FIELD FORCE ROUTING (BOTTOM NAV)
     function switchMobileNav(tab) {
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('ffTrackerTab').classList.add('hidden');
-      document.getElementById('ffHistoryTab').classList.add('hidden');
+      document.getElementById('ffHomeTab').classList.add('hidden');
+      document.getElementById('ffProgressTab').classList.add('hidden');
+      document.getElementById('ffCompletedTab').classList.add('hidden');
       document.getElementById('ffProfileTab').classList.add('hidden');
 
-      if (tab === 'tracker') {
-        document.getElementById('navTrackerBtn').classList.add('active');
-        document.getElementById('ffTrackerTab').classList.remove('hidden');
-      } else if (tab === 'history') {
-        document.getElementById('navHistoryBtn').classList.add('active');
-        document.getElementById('ffHistoryTab').classList.remove('hidden');
-        loadFFHistory();
+      if (tab === 'home') {
+        document.getElementById('navHomeBtn').classList.add('active');
+        document.getElementById('ffHomeTab').classList.remove('hidden');
+        loadFFDashboard();
+      } else if (tab === 'progress') {
+        document.getElementById('navProgressBtn').classList.add('active');
+        document.getElementById('ffProgressTab').classList.remove('hidden');
+        loadFFReqs('progress');
+      } else if (tab === 'completed') {
+        document.getElementById('navCompletedBtn').classList.add('active');
+        document.getElementById('ffCompletedTab').classList.remove('hidden');
+        loadFFReqs('completed');
       } else if (tab === 'profile') {
         document.getElementById('navProfileBtn').classList.add('active');
         document.getElementById('ffProfileTab').classList.remove('hidden');
-        loadFFProfileData();
+      }
+    }
+
+    function toggleCardDetails(cardId) {
+      const card = document.getElementById(cardId);
+      if (card.classList.contains('open')) {
+        card.classList.remove('open');
+      } else {
+        card.classList.add('open');
+      }
+    }
+    
+    async function loadFFDashboard() {
+      const res = await fetch(`${API_URL}?action=requisitions`);
+      const data = await res.json();
+      if (data.status === 'success') {
+        const total = data.requisitions.length;
+        const pending = data.requisitions.filter(r => r.status === 'Pending').length;
+        document.getElementById('homeKpiTotal').innerText = total;
+        document.getElementById('homeKpiPending').innerText = pending;
+      }
+    }
+    
+    async function loadFFReqs(type) {
+      const container = document.getElementById(type === 'progress' ? 'ffProgressList' : 'ffCompletedList');
+      container.innerHTML = `<div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div>`;
+      
+      const res = await fetch(`${API_URL}?action=requisitions`);
+      const data = await res.json();
+      
+      if (data.status === 'success') {
+        const filtered = data.requisitions.filter(r => 
+          type === 'progress' ? (r.status !== 'Completed' && r.status !== 'Delivered' && r.status !== 'Rejected') : (r.status === 'Completed' || r.status === 'Delivered' || r.status === 'Rejected')
+        );
+        
+        if (filtered.length > 0) {
+          container.innerHTML = filtered.map((r, i) => {
+            const isCompleted = (r.status === 'Completed' || r.status === 'Delivered');
+            return `
+              <div class="ff-req-card fade-up" id="card-${r.requisitionId}" onclick="toggleCardDetails('card-${r.requisitionId}')" style="animation-delay: ${Math.min(i * 0.05, 0.5)}s">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                  <span style="font-weight: 800; color: var(--primary-navy);">${r.vehicleCode}</span>
+                  <span class="badge ${isCompleted ? 'badge-emerald' : 'badge-blue'}">${r.status}</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-secondary);">Request ID: ${r.requisitionId} &nbsp;&nbsp;|&nbsp;&nbsp; ${r.submissionDate}</p>
+                
+                <div class="ff-req-details" onclick="event.stopPropagation()">
+                  <div class="timeline-container" style="padding: 0; margin-top: 1rem; box-shadow: none; border: none; background: transparent;">
+                    <div class="timeline-step ${r.status !== 'Not Processed' ? 'completed' : 'pending'}">
+                      <div class="step-indicator">1</div>
+                      <div class="step-content">
+                        <div class="step-title">Initialized</div>
+                        <div class="step-location">${r.submissionDate}</div>
+                      </div>
+                    </div>
+                    <div class="timeline-step ${r.status === 'Approved' || r.status === 'HO Processing' || isCompleted ? 'completed' : (r.status === 'Pending' ? 'active' : 'pending')}">
+                      <div class="step-indicator">2</div>
+                      <div class="step-content">
+                        <div class="step-title">Manager Approval</div>
+                        <div class="step-location">${r.managerRemark ? 'Remark: ' + r.managerRemark : 'Pending review'}</div>
+                      </div>
+                    </div>
+                    <div class="timeline-step ${r.status === 'HO Processing' || isCompleted ? 'completed' : 'pending'}">
+                      <div class="step-indicator">3</div>
+                      <div class="step-content">
+                        <div class="step-title">HO Processing</div>
+                        <div class="step-location">Head Office</div>
+                      </div>
+                    </div>
+                    <div class="timeline-step ${isCompleted ? 'completed' : 'pending'}">
+                      <div class="step-indicator">4</div>
+                      <div class="step-content">
+                        <div class="step-title">Completed</div>
+                        <div class="step-location">Documents Ready</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          container.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">No ${type === 'progress' ? 'active' : 'completed'} requests found.</p>`;
+        }
       }
     }
 
@@ -924,7 +946,7 @@
     // CORPORATE TRACKER RENDERER
     async function searchVehicles(query = null) {
       const q = query !== null ? query : document.getElementById('ffSearchInput').value;
-      if (!q && query === null) return; // wait for input
+      if (!q && query === null) return;
 
       const container = document.getElementById('vehicleResultsList');
       container.innerHTML = `<div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div>`;
@@ -934,97 +956,23 @@
       
       if (data.status === 'success' && data.vehicles.length > 0) {
         container.innerHTML = data.vehicles.map((v, i) => {
-          
-          // Logic for stages
-          let pHeight = '0%';
-          let s1 = '', s2 = '', s3 = '', s4 = '';
-          let slaHtml = '';
-          let dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-
-          if (v.status === 'Not Processed' || v.status === '') {
-            s1 = 'pending'; s2 = 'pending'; s3 = 'pending'; s4 = 'pending';
-          } else if (v.status === 'Pending') {
-            pHeight = '25%';
-            s1 = 'completed'; s2 = 'active'; s3 = 'pending'; s4 = 'pending';
-            slaHtml = `<div class="sla-banner">⏳ Awaiting Manager Approval</div>`;
-          } else if (v.status === 'Approved') {
-            pHeight = '50%';
-            s1 = 'completed'; s2 = 'completed'; s3 = 'active'; s4 = 'pending';
-            slaHtml = `<div class="sla-banner">⏳ SLA: 16 Days Remaining</div>`;
-          } else if (v.status === 'HO Processing') {
-            pHeight = '75%';
-            s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'active';
-            slaHtml = `<div class="sla-banner" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">⚙️ Head Office Processing</div>`;
-          } else if (v.status === 'Completed' || v.status === 'Delivered') {
-            pHeight = '100%';
-            s1 = 'completed'; s2 = 'completed'; s3 = 'completed'; s4 = 'completed';
-            slaHtml = `<div class="sla-banner" style="background:#dcfce7; color:#15803d; border-color:#bbf7d0;">✅ Process Completed</div>`;
-          }
-
-          const actionBtn = (v.status === 'Not Processed' || v.status === '') 
-            ? `<button class="btn btn-primary" onclick="submitRequisition('${v.code}')" style="width: 100%;">Create Paper Request</button>`
+          const isNotProcessed = (v.status === 'Not Processed' || v.status === '');
+          const actionBtn = isNotProcessed 
+            ? `<button class="btn btn-primary" onclick="submitRequisition('${v.code}')" style="width: 100%;">Initialize Request</button>`
             : `<button class="btn btn-outline" style="width: 100%; pointer-events:none;">Process In Progress</button>`;
 
           return `
-            <div class="fedex-card fade-up" style="animation-delay: ${Math.min(i * 0.05, 0.5)}s">
-              <div class="fedex-card-header">
-                <div>
-                  <div class="tracking-number">${v.code}</div>
-                  <div style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; margin-top: 0.1rem;">${v.customerName || 'Customer'}</div>
-                  ${slaHtml}
-                </div>
-                <div style="font-size: 2rem; opacity: 0.8;">📄</div>
+            <div class="ff-req-card fade-up" style="animation-delay: ${Math.min(i * 0.05, 0.5)}s; cursor: default;">
+              <div style="display:flex; justify-content:space-between; margin-bottom:0.75rem;">
+                <span style="font-weight: 800; font-size: 1.1rem; color: var(--primary-navy);">${v.code}</span>
+                <span class="badge ${isNotProcessed ? 'badge-amber' : 'badge-blue'}">${v.status || 'Not Processed'}</span>
               </div>
-              
-              <div class="vehicle-info-grid">
-                <div class="v-info-item"><span class="v-lbl">Reg No</span><span class="v-val">${v.registrationNo || '-'}</span></div>
-                <div class="v-info-item"><span class="v-lbl">Chassis</span><span class="v-val">${v.chassisNoPrimary || '-'}</span></div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.8rem; background: #f8fafc; padding: 0.5rem; border-radius: 0.4rem;">
+                <div><strong style="color:var(--text-secondary);">Chassis:</strong><br>${v.chassisNo || '-'}</div>
+                <div><strong style="color:var(--text-secondary);">Reg No:</strong><br>${v.registrationNo || '-'}</div>
+                <div style="grid-column: span 2;"><strong style="color:var(--text-secondary);">Customer:</strong><br>${v.customerName}</div>
               </div>
-
-              <!-- Vertical Timeline -->
-              <div class="timeline-container">
-                <div class="timeline-line">
-                  <div class="timeline-progress" style="height: ${pHeight};"></div>
-                </div>
-                
-                <div class="timeline-step ${s1}">
-                  <div class="step-icon-wrapper">📝</div>
-                  <div class="step-content">
-                    <div class="step-title">Requisition Submitted</div>
-                    <div class="step-location">📍 Officer Terminal</div>
-                  </div>
-                </div>
-                
-                <div class="timeline-step ${s2}">
-                  <div class="step-icon-wrapper">👨‍💼</div>
-                  <div class="step-content">
-                    <div class="step-title">Manager Verification</div>
-                    <div class="step-location">📍 Zonal Office</div>
-                    ${s2 === 'active' ? `<div class="step-time" style="color:var(--primary-blue);">Awaiting Approval...</div>` : ''}
-                    ${v.managerRemark ? `<div style="font-size:0.75rem; color:#0369a1; background:#e0f2fe; padding:0.25rem 0.5rem; border-radius:0.4rem; margin-top:0.3rem; font-weight:600;">💬 Remark: ${v.managerRemark}</div>` : ''}
-                  </div>
-                </div>
-                
-                <div class="timeline-step ${s3}">
-                  <div class="step-icon-wrapper">🏢</div>
-                  <div class="step-content">
-                    <div class="step-title">Head Office Processing</div>
-                    <div class="step-location">📍 Central Documentation Hub</div>
-                  </div>
-                </div>
-                
-                <div class="timeline-step ${s4}">
-                  <div class="step-icon-wrapper">✅</div>
-                  <div class="step-content">
-                    <div class="step-title">Process Completed</div>
-                    <div class="step-location">📍 Ready for Customer</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="fedex-action-area">
-                ${actionBtn}
-              </div>
+              <div>${actionBtn}</div>
             </div>
           `;
         }).join('');
@@ -1034,36 +982,13 @@
     }
 
     async function submitRequisition(code) {
-      if (!confirm(`Initialize paper transfer request for ${code}?`)) return;
+      const confirmed = await showCustomModal({ type: 'confirm', title: 'Initialize Request', message: `Create paper transfer request for ${code}?`, icon: '📄', confirmText: 'Initialize' }); if (!confirmed) return;
       const res = await fetch(`${API_URL}?action=requisition`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vehicleCode: code, officerStaffId: currentUser.staffId })
       });
       const data = await res.json();
-      if (data.status === 'success') {
-        searchVehicles(code);
-      } else alert('Failed to create request.');
-    }
-
-    async function loadFFHistory() {
-      const container = document.getElementById('ffHistoryList');
-      container.innerHTML = `<div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div>`;
-      const res = await fetch(`${API_URL}?action=requisitions`);
-      const data = await res.json();
-      if (data.status === 'success' && data.requisitions.length > 0) {
-        container.innerHTML = data.requisitions.map((r, i) => `
-          <div class="glass-panel fade-up" style="padding: 1.25rem; animation-delay: ${Math.min(i * 0.05, 0.5)}s">
-            <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-              <span style="font-weight: 800; color: var(--primary-navy);">${r.requisitionId}</span>
-              <span class="badge ${r.status === 'Processing' ? 'badge-blue' : 'badge-emerald'}">${r.status}</span>
-            </div>
-            <p style="font-size: 0.9rem; font-weight: 600;">Vehicle: ${r.vehicleCode}</p>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">SLA Deadline: ${r.deadline}</p>
-          </div>
-        `).join('');
-      } else {
-        container.innerHTML = `<p style="text-align: center;">No history found.</p>`;
-      }
+      if (data.status === 'success') { await showCustomModal({ type: 'alert', title: 'Success', message: 'Request created successfully!', icon: '✅' }); searchVehicles(code); } else await showCustomModal({ type: 'alert', title: 'Failed', message: 'Could not create the request. Please try again.', icon: '❌' });
     }
 
     // DESKTOP ADMIN & MANAGER LOGIC
@@ -1251,5 +1176,23 @@
     }
 
   </script>
+
+  <!-- CUSTOM MODAL SYSTEM -->
+  <div id="customModalOverlay" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,41,66,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease;">
+    <div id="customModalBox" style="background:#fff;border-radius:1.5rem;padding:2.5rem 2rem;max-width:400px;width:90%;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);transform:translateY(30px) scale(0.95);transition:all 0.4s cubic-bezier(0.16,1,0.3,1);text-align:center;position:relative;overflow:hidden;">
+      <div id="customModalIcon" style="font-size:3.5rem;margin-bottom:1rem;line-height:1;animation:popIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards;">❓</div>
+      <h3 id="customModalTitle" style="font-size:1.35rem;color:var(--primary-navy);margin-bottom:0.75rem;font-weight:800;font-family:var(--font-heading); letter-spacing:-0.02em;">Confirm Action</h3>
+      <p id="customModalMessage" style="color:var(--text-secondary);font-size:0.95rem;margin-bottom:1.5rem;line-height:1.5;font-weight:500;">Are you sure?</p>
+      <input type="text" id="customModalInput" class="input-field" style="display:none;margin-bottom:1.5rem;text-align:center;font-size:1rem;" />
+      <div style="display:flex;gap:1rem;justify-content:center;">
+        <button id="customModalCancelBtn" class="btn btn-outline" style="flex:1;border-radius:2rem;padding:0.75rem;">Cancel</button>
+        <button id="customModalConfirmBtn" class="btn btn-primary" style="flex:1;border-radius:2rem;padding:0.75rem;">Confirm</button>
+      </div>
+    </div>
+  </div>
+  <style>
+    @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  </style>
+
 </body>
 </html>
