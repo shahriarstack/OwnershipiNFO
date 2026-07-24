@@ -445,6 +445,25 @@
     .admin-kpi h3 { font-size: 2.5rem; color: var(--primary-navy); margin-top: 0.5rem; line-height: 1; }
     .admin-kpi p { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
 
+    /* =========================================================================
+       7. ANIMATIONS & LOADERS
+       ========================================================================= */
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .loader-spinner {
+      width: 1.25rem; height: 1.25rem;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    .loader-spinner-blue { border-top-color: var(--primary-blue); border-color: rgba(2, 132, 199, 0.2); }
+    
+    @keyframes fadeUp { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+    .fade-up { animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    
+    .loading-container { display: flex; justify-content: center; align-items: center; padding: 3rem; }
+
   </style>
 </head>
 <body id="bodyTag">
@@ -804,7 +823,7 @@
       const password = document.getElementById('loginPassword').value;
       const btn = document.getElementById('submitBtn');
       
-      btn.innerHTML = 'Authenticating...';
+      btn.innerHTML = '<span class="loader-spinner"></span> Authenticating...';
       btn.disabled = true;
 
       try {
@@ -907,12 +926,14 @@
       const q = query !== null ? query : document.getElementById('ffSearchInput').value;
       if (!q && query === null) return; // wait for input
 
+      const container = document.getElementById('vehicleResultsList');
+      container.innerHTML = `<div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div>`;
+
       const res = await fetch(`${API_URL}?action=vehicles&search=${encodeURIComponent(q)}`);
       const data = await res.json();
-      const container = document.getElementById('vehicleResultsList');
       
       if (data.status === 'success' && data.vehicles.length > 0) {
-        container.innerHTML = data.vehicles.map(v => {
+        container.innerHTML = data.vehicles.map((v, i) => {
           
           // Logic for stages
           let pHeight = '0%';
@@ -945,7 +966,7 @@
             : `<button class="btn btn-outline" style="width: 100%; pointer-events:none;">Process In Progress</button>`;
 
           return `
-            <div class="fedex-card">
+            <div class="fedex-card fade-up" style="animation-delay: ${Math.min(i * 0.05, 0.5)}s">
               <div class="fedex-card-header">
                 <div>
                   <div class="tracking-number">${v.code}</div>
@@ -1025,12 +1046,13 @@
     }
 
     async function loadFFHistory() {
+      const container = document.getElementById('ffHistoryList');
+      container.innerHTML = `<div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div>`;
       const res = await fetch(`${API_URL}?action=requisitions`);
       const data = await res.json();
-      const container = document.getElementById('ffHistoryList');
       if (data.status === 'success' && data.requisitions.length > 0) {
-        container.innerHTML = data.requisitions.map(r => `
-          <div class="glass-panel" style="padding: 1.25rem;">
+        container.innerHTML = data.requisitions.map((r, i) => `
+          <div class="glass-panel fade-up" style="padding: 1.25rem; animation-delay: ${Math.min(i * 0.05, 0.5)}s">
             <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
               <span style="font-weight: 800; color: var(--primary-navy);">${r.requisitionId}</span>
               <span class="badge ${r.status === 'Processing' ? 'badge-blue' : 'badge-emerald'}">${r.status}</span>
@@ -1074,11 +1096,12 @@
         document.getElementById('statReqs').innerText = data.requisitionsCount || 0;
       }
       
+      const tbody = document.getElementById('adminReqTable');
+      tbody.innerHTML = '<tr><td colspan="7"><div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div></td></tr>';
       const resReq = await fetch(`${API_URL}?action=requisitions`);
       const dataReq = await resReq.json();
-      const tbody = document.getElementById('adminReqTable');
       if (dataReq.status === 'success') {
-        tbody.innerHTML = dataReq.requisitions.map(r => {
+        tbody.innerHTML = dataReq.requisitions.map((r, i) => {
           let actionBtns = `<span class="badge badge-blue">${r.status}</span>`;
           if (r.status === 'Approved') {
             actionBtns = `<button class="btn btn-primary" style="padding:0.3rem 0.6rem; font-size:0.75rem;" onclick="updateReqStatus('${r.requisitionId}', 'HO Processing')">Start HO Processing</button>`;
@@ -1087,7 +1110,7 @@
           }
           
           return `
-          <tr>
+          <tr class="fade-up" style="animation-delay: ${Math.min(i * 0.03, 0.5)}s">
             <td style="font-weight: 700;">${r.requisitionId}</td>
             <td>${r.vehicleCode}</td>
             <td>${r.officerStaffId}</td>
@@ -1168,11 +1191,12 @@
     }
 
     async function loadManagerReqs() {
+      const tbody = document.getElementById('managerReqTable');
+      tbody.innerHTML = '<tr><td colspan="7"><div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:2rem;height:2rem;border-width:3px;"></span></div></td></tr>';
       const res = await fetch(`${API_URL}?action=requisitions`);
       const data = await res.json();
-      const tbody = document.getElementById('managerReqTable');
       if (data.status === 'success') {
-        tbody.innerHTML = data.requisitions.map(r => {
+        tbody.innerHTML = data.requisitions.map((r, i) => {
           let actionBtns = `<span class="badge badge-emerald">${r.status}</span>`;
           if (r.status === 'Pending') {
              actionBtns = `
@@ -1183,7 +1207,7 @@
              `;
           }
           return `
-          <tr>
+          <tr class="fade-up" style="animation-delay: ${Math.min(i * 0.03, 0.5)}s">
             <td style="font-weight: 700;">${r.requisitionId}</td>
             <td>${r.vehicleCode}</td>
             <td>${r.registrationNo || '-'}</td>
