@@ -1019,8 +1019,8 @@
             <span id="sidebarToggleIcon">☰ Sidebar</span>
           </button>
           <h2>Territory & Part Management Portal</h2>
-          <button class="btn btn-primary" onclick="showTerritorySummary()" style="padding:0.4rem 0.85rem; font-size:0.78rem; border-radius:8px; gap:0.35rem;">
-            🗺️ Territory Analytics
+          <button class="btn btn-primary" onclick="toggleTerritoryMatrix('mgr')" style="padding:0.4rem 0.85rem; font-size:0.78rem; border-radius:8px; gap:0.35rem;">
+            🗺️ Territory Matrix Table
           </button>
         </div>
         
@@ -1029,12 +1029,47 @@
             <button class="apple-segment-btn active" onclick="setManagerView('All')" id="btnMgrViewAll">Overall Summary</button>
             <button class="apple-segment-btn" onclick="setManagerView('Part A')" id="btnMgrViewA">Part A Summary</button>
             <button class="apple-segment-btn" onclick="setManagerView('Part B')" id="btnMgrViewB">Part B Summary</button>
-            <button class="apple-segment-btn" onclick="showTerritorySummary()" style="border-left:1px solid rgba(0,0,0,0.08); color:#007AFF; font-weight:600;">🗺️ Territory Breakdown</button>
+            <button class="apple-segment-btn" onclick="toggleTerritoryMatrix('mgr')" id="btnMgrTerritoryMatrix" style="border-left:1px solid rgba(0,0,0,0.08); color:#007AFF; font-weight:600;">🗺️ Territory Matrix Table</button>
         </div>
 
         <!-- KPI Grid -->
         <div class="admin-kpi-grid" id="managerKpiContainer">
            <!-- Injected dynamically by JS -->
+        </div>
+
+        <!-- INLINE TERRITORY PERFORMANCE MATRIX TABLE -->
+        <div id="mgrTerritoryMatrixPanel" class="glass-panel hidden" style="margin-bottom: 1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.06);">
+            <div style="display:flex; align-items:center; gap:0.5rem;">
+              <span style="font-size:1.1rem; background:rgba(0,122,255,0.1); color:#007AFF; padding:0.25rem 0.4rem; border-radius:6px;">🗺️</span>
+              <div>
+                <h3 style="font-size:1.1rem; font-weight:700;">Regional Territory Performance Matrix</h3>
+                <p style="font-size:0.7rem; color:#8e8e93;">Live breakdown across all 50 territories & part divisions</p>
+              </div>
+            </div>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <input type="text" id="mgrTerritorySearch" class="input-field" placeholder="Search territory..." style="padding:0.35rem 0.65rem; font-size:0.75rem; width:170px; background:#fff; border-radius:8px;" onkeyup="filterTerritoryMatrix('mgr')">
+              <button class="btn btn-outline" style="padding:0.35rem 0.65rem; font-size:0.75rem; border-radius:8px;" onclick="loadTerritoryMatrixData('mgr')">🔄 Refresh</button>
+            </div>
+          </div>
+
+          <div class="table-container" style="max-height:300px; overflow-y:auto;">
+            <table class="data-table" style="white-space:nowrap;">
+              <thead>
+                <tr>
+                  <th>Territory Name</th>
+                  <th>Part Division</th>
+                  <th>Fleet Size</th>
+                  <th>Requisitions</th>
+                  <th>Pending Actions</th>
+                  <th>Approved</th>
+                  <th>Activity Rate</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="mgrTerritoryMatrixTbody"></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- Filter Bar -->
@@ -1089,8 +1124,8 @@
               <span id="sidebarToggleIcon">☰ Sidebar</span>
             </button>
             <h2>Dashboard & Requests</h2>
-            <button class="btn btn-primary" onclick="showTerritorySummary()" style="padding:0.4rem 0.85rem; font-size:0.78rem; border-radius:8px; gap:0.35rem;">
-              🗺️ Territory Analytics
+            <button class="btn btn-primary" onclick="toggleTerritoryMatrix('adm')" style="padding:0.4rem 0.85rem; font-size:0.78rem; border-radius:8px; gap:0.35rem;">
+              🗺️ Territory Matrix Table
             </button>
           </div>
           
@@ -1099,7 +1134,7 @@
               <button class="apple-segment-btn active" onclick="setAdminOverviewView('All')" id="btnAdmViewAll">Overall Summary</button>
               <button class="apple-segment-btn" onclick="setAdminOverviewView('Part A')" id="btnAdmViewA">Part A View</button>
               <button class="apple-segment-btn" onclick="setAdminOverviewView('Part B')" id="btnAdmViewB">Part B View</button>
-              <button class="apple-segment-btn" onclick="showTerritorySummary()" style="border-left:1px solid rgba(0,0,0,0.08); color:#007AFF; font-weight:600;">🗺️ Territory Breakdown</button>
+              <button class="apple-segment-btn" onclick="toggleTerritoryMatrix('adm')" id="btnAdmTerritoryMatrix" style="border-left:1px solid rgba(0,0,0,0.08); color:#007AFF; font-weight:600;">🗺️ Territory Matrix Table</button>
           </div>
 
           <div class="admin-kpi-grid">
@@ -1123,6 +1158,41 @@
                 <div class="kpi-icon-pill" style="background:rgba(255,149,0,0.1); color:#FF9500;">📋</div>
               </div>
               <h3 id="statReqs" style="color: #FF9500;">0</h3>
+            </div>
+          </div>
+
+          <!-- INLINE TERRITORY PERFORMANCE MATRIX TABLE (ADMIN) -->
+          <div id="admTerritoryMatrixPanel" class="glass-panel hidden" style="margin-bottom: 1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.85rem; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(0,0,0,0.06);">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span style="font-size:1.1rem; background:rgba(0,122,255,0.1); color:#007AFF; padding:0.25rem 0.4rem; border-radius:6px;">🗺️</span>
+                <div>
+                  <h3 style="font-size:1.1rem; font-weight:700;">Regional Territory Performance Matrix</h3>
+                  <p style="font-size:0.7rem; color:#8e8e93;">Live breakdown across all 50 territories & part divisions</p>
+                </div>
+              </div>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <input type="text" id="admTerritorySearch" class="input-field" placeholder="Search territory..." style="padding:0.35rem 0.65rem; font-size:0.75rem; width:170px; background:#fff; border-radius:8px;" onkeyup="filterTerritoryMatrix('adm')">
+                <button class="btn btn-outline" style="padding:0.35rem 0.65rem; font-size:0.75rem; border-radius:8px;" onclick="loadTerritoryMatrixData('adm')">🔄 Refresh</button>
+              </div>
+            </div>
+
+            <div class="table-container" style="max-height:300px; overflow-y:auto;">
+              <table class="data-table" style="white-space:nowrap;">
+                <thead>
+                  <tr>
+                    <th>Territory Name</th>
+                    <th>Part Division</th>
+                    <th>Fleet Size</th>
+                    <th>Requisitions</th>
+                    <th>Pending Actions</th>
+                    <th>Approved</th>
+                    <th>Activity Rate</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="admTerritoryMatrixTbody"></tbody>
+              </table>
             </div>
           </div>
 
@@ -2013,35 +2083,6 @@
 
   </script>
 
-  <!-- TERRITORY SUMMARY ANALYTICS MODAL -->
-  <div id="territoryModalOverlay" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,41,66,0.65);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s ease;">
-    <div id="territoryModalBox" style="background:rgba(255,255,255,0.95);backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.9);border-radius:1.25rem;padding:1.5rem 1.75rem;max-width:850px;width:92%;max-height:85vh;box-shadow:0 25px 50px -12px rgba(0,0,0,0.3);transform:translateY(30px) scale(0.95);transition:all 0.4s cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden;display:flex;flex-direction:column;">
-      
-      <!-- Modal Header -->
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid rgba(0,0,0,0.08);">
-        <div style="display:flex;align-items:center;gap:0.6rem;">
-          <div style="background:rgba(0,122,255,0.12);color:#007AFF;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🗺️</div>
-          <div>
-            <h3 style="font-size:1.2rem;color:#1c1c1e;font-weight:700;letter-spacing:-0.02em;">Territory Analytical Summary</h3>
-            <p style="font-size:0.72rem;color:#8e8e93;font-weight:500;">Real-time breakdown across all 50 territories & part divisions</p>
-          </div>
-        </div>
-        <button onclick="closeTerritoryModal()" style="background:rgba(118,118,128,0.12);border:none;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#555;font-weight:700;transition:all 0.2s;" title="Close">✕</button>
-      </div>
-
-      <!-- Overview Stats Strip -->
-      <div id="territoryModalStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.75rem;margin-bottom:1.15rem;">
-         <!-- JS injected -->
-      </div>
-
-      <!-- Territory Cards Scroll Grid -->
-      <div id="territoryModalGrid" style="overflow-y:auto;flex:1;display:grid;grid-template-columns:repeat(auto-fill, minmax(240px, 1fr));gap:0.85rem;padding-right:0.25rem;">
-         <!-- JS injected cards -->
-      </div>
-
-    </div>
-  </div>
-
   <script>
     // SIDEBAR TOGGLE LOGIC
     function toggleSidebar() {
@@ -2055,110 +2096,104 @@
       });
     }
 
-    // TERRITORY ANALYTICS MODAL LOGIC
-    async function showTerritorySummary() {
-      const overlay = document.getElementById('territoryModalOverlay');
-      const box = document.getElementById('territoryModalBox');
-      const statsContainer = document.getElementById('territoryModalStats');
-      const gridContainer = document.getElementById('territoryModalGrid');
+    // INLINE TERRITORY PERFORMANCE MATRIX TABLE LOGIC (NO POPUPS)
+    let rawTerritorySummaryData = [];
 
-      gridContainer.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:3rem;"><span class="loader-spinner loader-spinner-blue" style="width:2.5rem;height:2.5rem;border-width:3px;"></span><p style="margin-top:0.75rem;color:#8e8e93;font-size:0.85rem;">Fetching territory metrics...</p></div>`;
+    function toggleTerritoryMatrix(role) {
+      const panelId = role === 'mgr' ? 'mgrTerritoryMatrixPanel' : 'admTerritoryMatrixPanel';
+      const btnId = role === 'mgr' ? 'btnMgrTerritoryMatrix' : 'btnAdmTerritoryMatrix';
+      const panel = document.getElementById(panelId);
+      const btn = document.getElementById(btnId);
 
-      overlay.classList.remove('hidden');
-      void overlay.offsetWidth;
-      overlay.style.opacity = '1';
-      box.style.transform = 'translateY(0) scale(1)';
+      if (!panel) return;
+
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        if (btn) btn.classList.add('active');
+        loadTerritoryMatrixData(role);
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } else {
+        panel.classList.add('hidden');
+        if (btn) btn.classList.remove('active');
+      }
+    }
+
+    async function loadTerritoryMatrixData(role) {
+      const tbodyId = role === 'mgr' ? 'mgrTerritoryMatrixTbody' : 'admTerritoryMatrixTbody';
+      const tbody = document.getElementById(tbodyId);
+      if (!tbody) return;
+
+      tbody.innerHTML = '<tr><td colspan="8"><div class="loading-container"><span class="loader-spinner loader-spinner-blue" style="width:1.5rem;height:1.5rem;border-width:2px;"></span></div></td></tr>';
 
       try {
         const res = await fetch(`${API_URL}?action=territory_summary`);
         const data = await res.json();
-
         if (data.status === 'success' && data.summary.length > 0) {
-          let totalTerritories = data.summary.length;
-          let totalFleet = 0, totalReqs = 0, totalApproved = 0;
-
-          data.summary.forEach(t => {
-            totalFleet += parseInt(t.total_vehicles || 0);
-            totalReqs += parseInt(t.total_requisitions || 0);
-            totalApproved += parseInt(t.approved || 0) + parseInt(t.completed || 0);
-          });
-
-          statsContainer.innerHTML = `
-            <div style="background:#fff;padding:0.6rem 0.85rem;border-radius:10px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-              <p style="font-size:0.65rem;color:#8e8e93;font-weight:700;text-transform:uppercase;">Territories</p>
-              <h4 style="font-size:1.2rem;color:#1c1c1e;font-weight:700;">${totalTerritories}</h4>
-            </div>
-            <div style="background:#fff;padding:0.6rem 0.85rem;border-radius:10px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-              <p style="font-size:0.65rem;color:#8e8e93;font-weight:700;text-transform:uppercase;">Total Fleet</p>
-              <h4 style="font-size:1.2rem;color:#007AFF;font-weight:700;">${totalFleet}</h4>
-            </div>
-            <div style="background:#fff;padding:0.6rem 0.85rem;border-radius:10px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-              <p style="font-size:0.65rem;color:#8e8e93;font-weight:700;text-transform:uppercase;">Requisitions</p>
-              <h4 style="font-size:1.2rem;color:#FF9500;font-weight:700;">${totalReqs}</h4>
-            </div>
-            <div style="background:#fff;padding:0.6rem 0.85rem;border-radius:10px;border:1px solid rgba(0,0,0,0.06);box-shadow:0 2px 8px rgba(0,0,0,0.02);">
-              <p style="font-size:0.65rem;color:#8e8e93;font-weight:700;text-transform:uppercase;">Processed</p>
-              <h4 style="font-size:1.2rem;color:#34C759;font-weight:700;">${totalApproved}</h4>
-            </div>
-          `;
-
-          gridContainer.innerHTML = data.summary.map(t => {
-            const vCount = parseInt(t.total_vehicles || 0);
-            const rCount = parseInt(t.total_requisitions || 0);
-            const pCount = parseInt(t.pending || 0);
-            const cCount = parseInt(t.completed || 0) + parseInt(t.approved || 0);
-            const pct = vCount > 0 ? Math.min(100, Math.round((rCount / vCount) * 100)) : 0;
-
-            return `
-              <div style="background:#ffffff;border:1px solid rgba(0,0,0,0.08);border-radius:12px;padding:0.85rem;box-shadow:0 2px 10px rgba(0,0,0,0.03);display:flex;flex-direction:column;justify-content:space-between;transition:transform 0.2s;" onmouseenter="this.style.transform='translateY(-2px)'" onmouseleave="this.style.transform='translateY(0)'">
-                <div>
-                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.4rem;">
-                    <div>
-                      <h4 style="font-size:0.95rem;font-weight:700;color:#1c1c1e;">${t.territory}</h4>
-                      <span class="badge ${t.part === 'Part A' ? 'badge-blue' : 'badge-amber'}" style="padding:0.15rem 0.45rem;font-size:0.6rem;margin-top:0.2rem;">${t.part}</span>
-                    </div>
-                    <span style="font-size:0.75rem;font-weight:700;color:#007AFF;background:rgba(0,122,255,0.08);padding:0.2rem 0.5rem;border-radius:6px;">${vCount} Vehicles</span>
-                  </div>
-
-                  <!-- Progress Bar -->
-                  <div style="margin:0.6rem 0;">
-                    <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#8e8e93;font-weight:600;margin-bottom:0.2rem;">
-                      <span>Activity Rate</span>
-                      <span>${pct}% (${rCount}/${vCount})</span>
-                    </div>
-                    <div style="width:100%;height:6px;background:rgba(118,118,128,0.12);border-radius:3px;overflow:hidden;">
-                      <div style="width:${pct}%;height:100%;background:linear-gradient(90deg, #007AFF, #34C759);border-radius:3px;"></div>
-                    </div>
-                  </div>
-
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;font-size:0.72rem;background:rgba(118,118,128,0.05);padding:0.4rem 0.6rem;border-radius:6px;margin-bottom:0.6rem;">
-                    <div><span style="color:#8e8e93;">Pending:</span> <strong>${pCount}</strong></div>
-                    <div><span style="color:#8e8e93;">Approved:</span> <strong style="color:#34C759;">${cCount}</strong></div>
-                  </div>
-                </div>
-
-                <button onclick="filterByTerritoryFromModal('${t.territory}')" class="btn btn-outline" style="width:100%;padding:0.35rem;font-size:0.75rem;border-radius:6px;border-color:rgba(0,122,255,0.3);color:#007AFF;">Filter Dashboard 🔍</button>
-              </div>
-            `;
-          }).join('');
+          rawTerritorySummaryData = data.summary;
+          renderTerritoryMatrixTable(role, rawTerritorySummaryData);
         } else {
-          gridContainer.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#8e8e93;padding:2rem;">No territory data available yet. Upload CSV data to populate territories.</p>`;
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:#8e8e93;">No territory data available yet. Upload CSV data to populate.</td></tr>';
         }
       } catch (e) {
-        gridContainer.innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#ef4444;padding:2rem;">Failed to fetch territory summary.</p>`;
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:1.5rem; color:#ef4444;">Failed to fetch territory matrix table data.</td></tr>';
       }
     }
 
-    function closeTerritoryModal() {
-      const overlay = document.getElementById('territoryModalOverlay');
-      const box = document.getElementById('territoryModalBox');
-      overlay.style.opacity = '0';
-      box.style.transform = 'translateY(30px) scale(0.95)';
-      setTimeout(() => overlay.classList.add('hidden'), 300);
+    function renderTerritoryMatrixTable(role, list) {
+      const tbodyId = role === 'mgr' ? 'mgrTerritoryMatrixTbody' : 'admTerritoryMatrixTbody';
+      const tbody = document.getElementById(tbodyId);
+      if (!tbody) return;
+
+      if (list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:1.5rem;">No matching territories found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = list.map((t, i) => {
+        const vCount = parseInt(t.total_vehicles || 0);
+        const rCount = parseInt(t.total_requisitions || 0);
+        const pCount = parseInt(t.pending || 0);
+        const cCount = parseInt(t.completed || 0) + parseInt(t.approved || 0);
+        const pct = vCount > 0 ? Math.min(100, Math.round((rCount / vCount) * 100)) : 0;
+
+        return `
+          <tr class="fade-up" style="animation-delay: ${Math.min(i * 0.02, 0.4)}s">
+            <td style="font-weight:700; color:#1c1c1e;">${t.territory}</td>
+            <td><span class="badge ${t.part === 'Part A' ? 'badge-blue' : 'badge-amber'}">${t.part}</span></td>
+            <td style="font-weight:700; color:#007AFF;">${vCount}</td>
+            <td>${rCount}</td>
+            <td><span class="badge badge-amber">${pCount}</span></td>
+            <td><span class="badge badge-emerald">${cCount}</span></td>
+            <td>
+              <div style="display:flex; align-items:center; gap:0.5rem; width:130px;">
+                <div style="flex:1; height:6px; background:rgba(118,118,128,0.12); border-radius:3px; overflow:hidden;">
+                  <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #007AFF, #34C759); border-radius:3px;"></div>
+                </div>
+                <span style="font-size:0.7rem; font-weight:700; color:#555;">${pct}%</span>
+              </div>
+            </td>
+            <td>
+              <button class="btn btn-outline" style="padding:0.25rem 0.55rem; font-size:0.72rem; border-radius:6px; border-color:rgba(0,122,255,0.3); color:#007AFF;" onclick="applyTerritoryInlineFilter('${t.territory}')">Filter List 🔍</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
-    function filterByTerritoryFromModal(territory) {
-      closeTerritoryModal();
+    function filterTerritoryMatrix(role) {
+      const searchInputId = role === 'mgr' ? 'mgrTerritorySearch' : 'admTerritorySearch';
+      const query = document.getElementById(searchInputId).value.toLowerCase().trim();
+      if (!query) {
+        renderTerritoryMatrixTable(role, rawTerritorySummaryData);
+        return;
+      }
+      const filtered = rawTerritorySummaryData.filter(t => 
+        t.territory.toLowerCase().includes(query) || t.part.toLowerCase().includes(query)
+      );
+      renderTerritoryMatrixTable(role, filtered);
+    }
+
+    function applyTerritoryInlineFilter(territory) {
       if (currentUser && currentUser.role === 'MANAGER') {
         const tInput = document.getElementById('mgrFilterTerritory');
         if (tInput) tInput.value = territory;
