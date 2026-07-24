@@ -277,6 +277,12 @@ if ($action === 'vehicles') {
     exit();
 }
 
+if ($action === 'vehicles_raw') {
+    $stmt = $pdo->query("SELECT * FROM vehicles ORDER BY id DESC");
+    echo json_encode(["status" => "success", "data" => $stmt->fetchAll(PDO::FETCH_ASSOC)]);
+    exit();
+}
+
 if ($action === 'requisition') {
     $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
     $vehicleCode    = trim($input['vehicleCode'] ?? '');
