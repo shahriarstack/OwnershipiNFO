@@ -561,8 +561,11 @@
       <div style="display: flex; align-items: center; gap: 0.5rem;">
         <img src="https://i.ibb.co.com/N2kYDkbt/ACI-Motors-Logo-AI-White.png" alt="ACI Motors">
       </div>
-      <div id="mobileTerritoryBadge" style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700;">
-        Zone D
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div id="mobileTerritoryBadge" style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700;">Zone D</div>
+        <button onclick="logout()" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: all 0.2s;" title="Logout">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+        </button>
       </div>
     </header>
 
@@ -627,17 +630,7 @@
           <h2 style="font-size: 1.25rem; margin-bottom: 1rem;">Processing History</h2>
           <div id="ffCompletedList"></div>
         </div>
-        
-        <!-- Tab: Profile -->
-        <div id="ffProfileTab" class="hidden">
-          <div class="glass-panel" style="text-align: center; padding: 2rem 1.5rem;">
-            <div style="width: 80px; height: 80px; background: #e0f2fe; color: #0284c7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; margin: 0 auto 1rem auto;">
-              👮
-            </div>
-            <h2 id="profileName" style="font-size: 1.5rem; margin-bottom: 0.25rem;">Officer Name</h2>
-            <p id="profileId" style="color: var(--text-secondary); font-weight: 600; margin-bottom: 1.5rem;">FF01</p>
-          </div>
-        </div>
+
 
       </div>
 
@@ -646,20 +639,16 @@
     <!-- MOBILE BOTTOM NAV (FIELD FORCE ONLY) -->
     <nav id="mobileBottomNav" class="bottom-nav hidden">
       <a class="nav-item active" id="navHomeBtn" onclick="switchMobileNav('home')">
-        <span class="nav-icon">🏠</span>
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
         <span>Home</span>
       </a>
       <a class="nav-item" id="navProgressBtn" onclick="switchMobileNav('progress')">
-        <span class="nav-icon">⏳</span>
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>
         <span>Progress</span>
       </a>
       <a class="nav-item" id="navCompletedBtn" onclick="switchMobileNav('completed')">
-        <span class="nav-icon">✅</span>
+        <span class="nav-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></span>
         <span>History</span>
-      </a>
-      <a class="nav-item" id="navProfileBtn" onclick="switchMobileNav('profile')">
-        <span class="nav-icon">👤</span>
-        <span>Profile</span>
       </a>
     </nav>
 
@@ -816,10 +805,7 @@
         document.getElementById('mobileBottomNav').classList.remove('hidden');
         document.getElementById('fieldForcePanel').classList.remove('hidden');
         document.getElementById('mobileTerritoryBadge').innerText = `Zone ${currentUser.areaCode || 'D'}`;
-        
-        // Profile setup
-        document.getElementById('profileName').innerText = currentUser.name || currentUser.staffId;
-        document.getElementById('profileId').innerText = currentUser.staffId;
+
         
         switchMobileNav('home');
         loadFFDashboard(); // Load all initially or leave blank
@@ -851,7 +837,6 @@
       document.getElementById('ffHomeTab').classList.add('hidden');
       document.getElementById('ffProgressTab').classList.add('hidden');
       document.getElementById('ffCompletedTab').classList.add('hidden');
-      document.getElementById('ffProfileTab').classList.add('hidden');
 
       if (tab === 'home') {
         document.getElementById('navHomeBtn').classList.add('active');
@@ -865,9 +850,6 @@
         document.getElementById('navCompletedBtn').classList.add('active');
         document.getElementById('ffCompletedTab').classList.remove('hidden');
         loadFFReqs('completed');
-      } else if (tab === 'profile') {
-        document.getElementById('navProfileBtn').classList.add('active');
-        document.getElementById('ffProfileTab').classList.remove('hidden');
       }
     }
 
