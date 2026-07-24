@@ -336,6 +336,106 @@
     .desktop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
     .desktop-header h2 { font-size: 1.5rem; color: var(--primary-navy); }
 
+    /* Mobile Responsiveness for Admin & Manager Panels */
+    @media (max-width: 900px) {
+      body.role-admin #appView, body.role-manager #appView {
+        flex-direction: column !important;
+        min-height: auto !important;
+      }
+      
+      .sidebar {
+        width: 100% !important;
+        height: auto !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+        padding: 0.75rem 1rem !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2) !important;
+      }
+
+      .sidebar-logo {
+        height: 26px !important;
+        margin-bottom: 0.5rem !important;
+      }
+
+      .sidebar-menu {
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        gap: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .sidebar-link {
+        padding: 0.4rem 0.75rem !important;
+        font-size: 0.78rem !important;
+        border-radius: 0.5rem !important;
+        flex-shrink: 0 !important;
+      }
+
+      .sidebar > div:last-child {
+        margin-top: 0.4rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+      }
+
+      .sidebar > div:last-child > div {
+        margin-bottom: 0 !important;
+        padding: 0.35rem 0.65rem !important;
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+      }
+
+      .sidebar > div:last-child button {
+        width: auto !important;
+        padding: 0.35rem 0.75rem !important;
+        font-size: 0.75rem !important;
+      }
+
+      body.role-admin .main-content, body.role-manager .main-content {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0.85rem !important;
+        box-sizing: border-box !important;
+      }
+
+      .desktop-header {
+        margin-bottom: 1rem !important;
+      }
+      .desktop-header h2 {
+        font-size: 1.2rem !important;
+      }
+
+      /* Admin User Provisioning 2-Column layout to 1-Column on mobile */
+      #adminUsersTab > div {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+
+      /* Admin Data Hub 2-Column layout to 1-Column on mobile */
+      #adminCsvTab > div {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+      }
+
+      .admin-kpi-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.6rem !important;
+      }
+
+      .admin-kpi {
+        padding: 0.75rem !important;
+      }
+      .admin-kpi h3 {
+        font-size: 1.35rem !important;
+      }
+    }
+
     /* =========================================================================
        5. FEDEX-BEATING VERTICAL TRACKER (OFFICER PANEL)
        ========================================================================= */
