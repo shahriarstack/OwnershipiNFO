@@ -197,12 +197,57 @@
       overflow-x: hidden !important;
     }
     
-    @media (min-width: 600px) {
+    /* FIELD FORCE MOBILE & WINDOWS RESPONSIVE LAYOUT */
+    @media (max-width: 767px) {
       body.role-field-force #appView {
         max-width: 480px !important;
+        margin: 0 auto;
         box-shadow: 0 0 50px rgba(0,0,0,0.1);
         border-left: 1px solid rgba(0,0,0,0.05);
         border-right: 1px solid rgba(0,0,0,0.05);
+      }
+
+      .mobile-header {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        max-width: 480px !important;
+      }
+
+      .bottom-nav {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        max-width: 480px !important;
+      }
+
+      .officer-desktop-nav {
+        display: none !important;
+      }
+    }
+
+    @media (min-width: 768px) {
+      body.role-field-force #appView {
+        max-width: 1200px !important;
+        margin: 0 auto !important;
+        padding: 1.5rem 2rem 3rem 2rem !important;
+      }
+
+      body.role-field-force .mobile-header {
+        max-width: 100% !important;
+        left: 0 !important;
+        transform: none !important;
+        border-radius: 1.25rem !important;
+        margin-bottom: 1.5rem !important;
+        box-shadow: 0 10px 30px rgba(15, 41, 66, 0.2) !important;
+      }
+
+      .bottom-nav {
+        display: none !important;
+      }
+
+      .officer-desktop-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1.5rem !important;
       }
     }
     
@@ -225,14 +270,6 @@
     }
     .mobile-header img { height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
 
-    @media (min-width: 600px) {
-      .mobile-header {
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 480px;
-      }
-    }
-
     /* Bottom Navigation Bar (iOS/Android Native Feel) */
     .bottom-nav {
       position: fixed;
@@ -250,14 +287,6 @@
       z-index: 1000;
       box-shadow: 0 -10px 25px rgba(0,0,0,0.05);
       box-sizing: border-box;
-    }
-    
-    @media (min-width: 600px) {
-      .bottom-nav {
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 480px;
-      }
     }
     
     .nav-item {
@@ -1049,13 +1078,21 @@
       </div>
     </aside>
 
-    <!-- MOBILE HEADER (FIELD FORCE ONLY) -->
+    <!-- MOBILE & DESKTOP HEADER (FIELD FORCE) -->
     <header id="mobileHeader" class="mobile-header hidden">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <img src="https://i.ibb.co.com/N2kYDkbt/ACI-Motors-Logo-AI-White.png" alt="ACI Motors">
-      </div>
       <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <img src="https://i.ibb.co.com/N2kYDkbt/ACI-Motors-Logo-AI-White.png" alt="ACI Motors">
         <div id="mobileTerritoryBadge" style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 700;">Zone D</div>
+      </div>
+
+      <!-- Desktop Tab Switcher (Visible on Windows Desktop View) -->
+      <div class="officer-desktop-nav" style="display:flex; gap:0.4rem; background:rgba(255,255,255,0.1); padding:0.25rem; border-radius:0.75rem; border:1px solid rgba(255,255,255,0.2);">
+        <button class="apple-segment-btn active" id="deskFfNavHome" onclick="switchOfficerDesktopNav('home')" style="color:white; font-size:0.78rem; padding:0.35rem 0.85rem;">🏠 Overview & Search</button>
+        <button class="apple-segment-btn" id="deskFfNavProgress" onclick="switchOfficerDesktopNav('progress')" style="color:white; font-size:0.78rem; padding:0.35rem 0.85rem;">⏳ Active Requisitions</button>
+        <button class="apple-segment-btn" id="deskFfNavCompleted" onclick="switchOfficerDesktopNav('completed')" style="color:white; font-size:0.78rem; padding:0.35rem 0.85rem;">✅ Processing History</button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
         <button onclick="logout()" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; transition: all 0.2s;" title="Logout">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
         </button>
@@ -1672,31 +1709,40 @@
       }
     }
 
-    function logout() {
-      localStorage.removeItem(SESSION_KEY);
-      window.location.reload();
-    }
-
-    // FIELD FORCE ROUTING (BOTTOM NAV)
+    // FIELD FORCE ROUTING (BOTTOM NAV & DESKTOP NAV)
     function switchMobileNav(tab) {
       document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.officer-desktop-nav button').forEach(b => b.classList.remove('active'));
+
       document.getElementById('ffHomeTab').classList.add('hidden');
       document.getElementById('ffProgressTab').classList.add('hidden');
       document.getElementById('ffCompletedTab').classList.add('hidden');
 
       if (tab === 'home') {
-        document.getElementById('navHomeBtn').classList.add('active');
+        document.getElementById('navHomeBtn')?.classList.add('active');
+        document.getElementById('deskFfNavHome')?.classList.add('active');
         document.getElementById('ffHomeTab').classList.remove('hidden');
         loadFFDashboard();
       } else if (tab === 'progress') {
-        document.getElementById('navProgressBtn').classList.add('active');
+        document.getElementById('navProgressBtn')?.classList.add('active');
+        document.getElementById('deskFfNavProgress')?.classList.add('active');
         document.getElementById('ffProgressTab').classList.remove('hidden');
         loadFFReqs('progress');
       } else if (tab === 'completed') {
-        document.getElementById('navCompletedBtn').classList.add('active');
+        document.getElementById('navCompletedBtn')?.classList.add('active');
+        document.getElementById('deskFfNavCompleted')?.classList.add('active');
         document.getElementById('ffCompletedTab').classList.remove('hidden');
         loadFFReqs('completed');
       }
+    }
+
+    function switchOfficerDesktopNav(tab) {
+      switchMobileNav(tab);
+    }
+
+    function logout() {
+      localStorage.removeItem(SESSION_KEY);
+      window.location.reload();
     }
 
     function toggleCardDetails(cardId) {
