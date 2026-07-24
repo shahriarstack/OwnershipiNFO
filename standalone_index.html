@@ -15,7 +15,7 @@
     :root {
       --bg-primary: #f1f5f9;
       --bg-secondary: #ffffff;
-      --bg-card: rgba(255, 255, 255, 0.85); /* Glassmorphism base */
+      --bg-card: rgba(255, 255, 255, 0.45); /* High liquid glass base */
       --text-primary: #0f172a;
       --text-secondary: #64748b;
       --text-heading: #0F2942;
@@ -29,18 +29,18 @@
       --status-emerald: #10b981;
       --danger-color: #ef4444;
 
-      --border-color: rgba(226, 232, 240, 0.8);
-      --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+      --border-color: rgba(255, 255, 255, 0.5);
+      --glass-border: 1px solid rgba(255, 255, 255, 0.6);
       
-      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 10px 25px -5px rgba(15, 41, 66, 0.08), 0 8px 10px -6px rgba(15, 41, 66, 0.04);
-      --shadow-hover: 0 20px 45px -10px rgba(15, 41, 66, 0.18);
+      --shadow-sm: 0 4px 15px 0 rgba(31, 38, 135, 0.05);
+      --shadow-md: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+      --shadow-hover: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
       --shadow-timeline: 0 8px 24px -4px rgba(2, 132, 199, 0.15);
 
-      --radius-sm: 0.25rem;
-      --radius-md: 0.4rem;
-      --radius-lg: 0.6rem;
-      --radius-xl: 0.8rem;
+      --radius-sm: 0.5rem;
+      --radius-md: 0.8rem;
+      --radius-lg: 1.25rem;
+      --radius-xl: 1.75rem;
       
       --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-heading: 'Outfit', sans-serif;
@@ -51,8 +51,9 @@
     body {
       background-color: var(--bg-primary);
       background-image: 
-        radial-gradient(circle at 10% 0%, rgba(2, 132, 199, 0.06) 0%, transparent 40%),
-        radial-gradient(circle at 90% 100%, rgba(15, 41, 66, 0.04) 0%, transparent 40%);
+        radial-gradient(circle at 10% -10%, rgba(14, 165, 233, 0.25) 0%, transparent 40%),
+        radial-gradient(circle at 90% 110%, rgba(2, 132, 199, 0.25) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(248, 250, 252, 0.8) 0%, transparent 100%);
       background-attachment: fixed;
       color: var(--text-primary);
       font-family: var(--font-sans);
@@ -72,13 +73,13 @@
        ========================================================================= */
     .glass-panel {
       background: var(--bg-card);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(25px) saturate(200%);
+      -webkit-backdrop-filter: blur(25px) saturate(200%);
       border: var(--glass-border);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-md);
-      padding: 1.25rem;
-      margin-bottom: 1rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
     }
 
     .alert { padding: 0.8rem; border-radius: var(--radius-md); margin-bottom: 1rem; font-size: 0.85rem; font-weight: 500; text-align: center; }
@@ -127,16 +128,17 @@
     /* =========================================================================
        3. LOGIN VIEW
        ========================================================================= */
-    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+    .login-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem; }
     .login-card {
       width: 100%;
-      max-width: 380px;
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      max-width: 360px;
+      background: var(--bg-card);
+      backdrop-filter: blur(25px) saturate(200%);
+      -webkit-backdrop-filter: blur(25px) saturate(200%);
+      border: var(--glass-border);
       border-radius: var(--radius-xl);
-      box-shadow: 0 25px 60px -12px rgba(15, 41, 66, 0.2);
-      padding: 2rem 1.5rem;
+      box-shadow: var(--shadow-md);
+      padding: 1.75rem 1.25rem;
       animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
     @keyframes slideUpFade {
@@ -146,8 +148,8 @@
 
     .login-card-top {
       background: linear-gradient(135deg, var(--primary-navy) 0%, #1e3a8a 100%);
-      margin: -2rem -1.5rem 1.5rem -1.5rem;
-      padding: 1.5rem 1.25rem;
+      margin: -1.75rem -1.25rem 1.25rem -1.25rem;
+      padding: 1.25rem 1rem;
       text-align: center;
       color: #ffffff;
       border-top-left-radius: var(--radius-xl);
@@ -439,11 +441,12 @@
     .badge-emerald { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 
     /* KPI Grid Admin */
-    .admin-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-    .admin-kpi { background: white; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; position: relative; overflow: hidden; }
-    .admin-kpi::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(2,132,199,0.1) 0%, transparent 70%); border-radius: 50%; }
-    .admin-kpi h3 { font-size: 2.5rem; color: var(--primary-navy); margin-top: 0.5rem; line-height: 1; }
-    .admin-kpi p { font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    .admin-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .admin-kpi { background: var(--bg-card); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%); border: var(--glass-border); border-radius: var(--radius-lg); padding: 1.25rem; box-shadow: var(--shadow-md); display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all 0.3s; }
+    .admin-kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .admin-kpi::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(2,132,199,0.15) 0%, transparent 70%); border-radius: 50%; }
+    .admin-kpi h3 { font-size: 2rem; color: var(--primary-navy); margin-top: 0.5rem; line-height: 1; }
+    .admin-kpi p { font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* =========================================================================
        7. ANIMATIONS & LOADERS
@@ -465,11 +468,22 @@
     .loading-container { display: flex; justify-content: center; align-items: center; padding: 3rem; }
 
   
-    .ff-req-card { background: var(--bg-card); border: 1px solid #e2e8f0; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); cursor: pointer; transition: transform 0.2s; }
-    .ff-req-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-    .ff-req-details { display: none; padding-top: 1rem; margin-top: 1rem; border-top: 1px dashed #cbd5e1; }
+    .ff-req-card { 
+      background: var(--bg-card); 
+      backdrop-filter: blur(25px) saturate(200%);
+      -webkit-backdrop-filter: blur(25px) saturate(200%);
+      border: var(--glass-border); 
+      border-radius: var(--radius-lg); 
+      padding: 0.85rem; 
+      margin-bottom: 0.75rem; 
+      box-shadow: var(--shadow-sm); 
+      cursor: pointer; 
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    }
+    .ff-req-card:hover { transform: scale(1.02); box-shadow: var(--shadow-hover); background: rgba(255, 255, 255, 0.6); }
+    .ff-req-details { display: none; padding-top: 0.85rem; margin-top: 0.85rem; border-top: 1px dashed rgba(148, 163, 184, 0.4); }
     .ff-req-card.open .ff-req-details { display: block; animation: slideDown 0.3s ease forwards; }
-    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
   </style>
 </head>
